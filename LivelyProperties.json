@@ -1,0 +1,160 @@
+{
+  "flightSettings": {
+    "type": "label",
+    "value": "Flight"
+  },
+  "starCount": {
+    "max": 1600,
+    "min": 100,
+    "step": 50,
+    "text": "Star count",
+    "type": "slider",
+    "value": 1200
+  },
+  "speed": {
+    "max": 10,
+    "min": 1,
+    "step": 1,
+    "text": "Speed",
+    "type": "slider",
+    "value": 1
+  },
+  "warp": {
+    "max": 10,
+    "min": 0,
+    "step": 1,
+    "text": "Warp",
+    "type": "slider",
+    "value": 0
+  },
+  "starSize": {
+    "max": 10,
+    "min": 1,
+    "step": 1,
+    "text": "Star size",
+    "type": "slider",
+    "value": 4
+  },
+  "glow": {
+    "max": 10,
+    "min": 0,
+    "step": 1,
+    "text": "Glow",
+    "type": "slider",
+    "value": 5
+  },
+  "trail": {
+    "max": 9,
+    "min": 0,
+    "step": 1,
+    "text": "Trail",
+    "type": "slider",
+    "value": 0
+  },
+  "roll": {
+    "max": 10,
+    "min": -10,
+    "step": 1,
+    "text": "Roll",
+    "type": "slider",
+    "value": 0
+  },
+  "sceneSettings": {
+    "type": "label",
+    "value": "Scene"
+  },
+  "starColor": {
+    "text": "Star color",
+    "type": "color",
+    "value": "#FFFFFF"
+  },
+  "colorMode": {
+    "items": [
+      "Fixed color",
+      "Rainbow",
+      "Realistic",
+      "Depth"
+    ],
+    "text": "Color mode",
+    "type": "dropdown",
+    "value": 0
+  },
+  "steering": {
+    "items": [
+      "Straight ahead",
+      "Pointer",
+      "Auto drift"
+    ],
+    "text": "Steering",
+    "type": "dropdown",
+    "value": 0
+  },
+  "nebulaBackdrop": {
+    "text": "Nebula backdrop",
+    "type": "checkbox",
+    "value": false
+  },
+  "comets": {
+    "text": "Comets",
+    "type": "checkbox",
+    "value": true
+  },
+  "twinklingStars": {
+    "text": "Twinkling stars",
+    "type": "checkbox",
+    "value": false
+  },
+  "clockOverlay": {
+    "text": "Clock overlay",
+    "type": "checkbox",
+    "value": true
+  },
+  "showClockSeconds": {
+    "text": "Show clock seconds",
+    "type": "checkbox",
+    "value": false
+  },
+  "clockSize": {
+    "max": 8,
+    "min": 1,
+    "step": 0.5,
+    "text": "Clock size",
+    "type": "slider",
+    "value": 2
+  },
+  "clockVerticalPosition": {
+    "max": 92,
+    "min": 4,
+    "step": 1,
+    "text": "Clock vertical position",
+    "type": "slider",
+    "value": 10
+  },
+  "clockHorizontalPosition": {
+    "max": 100,
+    "min": 0,
+    "step": 1,
+    "text": "Clock horizontal position",
+    "type": "slider",
+    "value": 5
+  },
+  "clockAlignment": {
+    "items": [
+      "Left",
+      "Right"
+    ],
+    "text": "Time and date alignment",
+    "type": "dropdown",
+    "value": 0
+  },
+  "autoQuality": {
+    "text": "Auto quality",
+    "type": "checkbox",
+    "value": true
+  },
+  "startStandaloneFullscreen": {
+    "text": "Start standalone page in fullscreen",
+    "type": "checkbox",
+    "value": false
+  }
+}

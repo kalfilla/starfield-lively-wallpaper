@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starfield Screensaver — Warp Speed Space Flight in Your Browser</title>
+  <meta name="description"
+    content="Free starfield screensaver in your browser: fly through space at warp speed in 8 modes — Hyperspace, Warp Jump, Wormhole, Galaxy and Retro. Fullscreen, no download.">
+  <link rel="stylesheet" href="./files/styles.css">
+  <script src="./files/theme.js"></script>
+</head>
+
+<body>
+  <!-- MAIN -->
+  <div id="main">
+    <!-- WORKSPACE -->
+    <div id="workspace">
+      <!-- SIDEBAR -->
+      <div id="sidebar">
+        <details class="section" data-section="screensaver" open>
+          <summary class="section-title">Screensaver</summary>
+          <p class="rm-note" id="rm-note" hidden="">Your device asks for reduced motion, so the page started in the calm
+            Zen mode.</p>
+          <button type="button" class="action-btn primary" id="b-fs"><span class="ab-icon">⛶</span> Enter
+            Fullscreen</button>
+          <button type="button" class="action-btn" id="btn-pause"><span class="ab-icon">⏸</span> Pause</button>
+          <button type="button" class="action-btn" id="b-png"><span class="ab-icon">🖼</span> Save as PNG</button>
+          <button type="button" class="action-btn" id="b-link"><span class="ab-icon">🔗</span> Copy link to these
+            settings</button>
+        </details>
+
+        <details class="section" data-section="color">
+          <summary class="section-title">Color</summary>
+          <div class="color-grid" id="color-grid">
+            <div class="color-swatch" role="button" tabindex="0" data-color="#ffffff"
+              style="background:linear-gradient(135deg,#ffffff,#aaaaaa)" title="White" aria-label="White"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#00d4ff"
+              style="background:linear-gradient(135deg,#00d4ff,#0080aa)" title="Cyan" aria-label="Cyan"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#4488ff"
+              style="background:linear-gradient(135deg,#4488ff,#0033aa)" title="Blue" aria-label="Blue"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#ffd700"
+              style="background:linear-gradient(135deg,#ffd700,#aa8800)" title="Gold" aria-label="Gold"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#00ff88"
+              style="background:linear-gradient(135deg,#00ff88,#00aa55)" title="Green" aria-label="Green"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#ff6688"
+              style="background:linear-gradient(135deg,#ff6688,#aa2244)" title="Rose" aria-label="Rose"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#b388ff"
+              style="background:linear-gradient(135deg,#b388ff,#7c3aed)" title="Purple" aria-label="Purple"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#ff8c00"
+              style="background:linear-gradient(135deg,#ff8c00,#aa5500)" title="Orange" aria-label="Orange"></div>
+            <div class="color-swatch" role="button" tabindex="0" data-color="#88ffee"
+              style="background:linear-gradient(135deg,#88ffee,#44aa99)" title="Aqua" aria-label="Aqua"></div>
+            <div class="color-swatch rainbow-swatch" role="button" tabindex="0" data-cm="rainbow" title="Rainbow"
+              aria-label="Rainbow"></div>
+            <div class="color-swatch real-swatch" role="button" tabindex="0" data-cm="real"
+              title="Realistic star colours" aria-label="Realistic star colours"></div>
+          </div>
+          <div class="ctrl-row" style="margin-top:.4rem">
+            <label class="ctrl-label" for="custom-color">Custom</label>
+            <input type="color" id="custom-color" value="#ffffff" title="Custom color">
+            <span class="ctrl-val" id="custom-color-val" style="font-size:.55rem;min-width:4rem">#bfe0ff</span>
+          </div>
+        </details>
+
+        <details class="section" data-section="flight">
+          <summary class="section-title">Flight</summary>
+          <!-- Slider bounds, steps, and initial values come from SETTINGS in starfield.js. -->
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-count">Stars</label>
+            <input type="range" id="s-count" aria-label="Stars">
+            <span class="ctrl-val" id="v-count"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-speed">Speed</label>
+            <input type="range" id="s-speed" aria-label="Speed">
+            <span class="ctrl-val" id="v-speed"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-warp">Warp</label>
+            <input type="range" id="s-warp" aria-label="Warp">
+            <span class="ctrl-val" id="v-warp"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-size">Size</label>
+            <input type="range" id="s-size" aria-label="Size">
+            <span class="ctrl-val" id="v-size"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-glow">Glow</label>
+            <input type="range" id="s-glow" aria-label="Glow">
+            <span class="ctrl-val" id="v-glow"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-trail">Trail</label>
+            <input type="range" id="s-trail" aria-label="Trail">
+            <span class="ctrl-val" id="v-trail"></span>
+          </div>
+          <div class="ctrl-row">
+            <label class="ctrl-label" for="s-roll">Roll</label>
+            <input type="range" id="s-roll" aria-label="Roll">
+            <span class="ctrl-val" id="v-roll"></span>
+          </div>
+        </details>
+
+        <details class="section" data-section="scene">
+          <summary class="section-title">Scene</summary>
+          <label class="ctrl-label" for="o-steer" style="display:block;margin-bottom:.3rem">Steering</label>
+          <select class="sel" id="o-steer">
+            <option value="off">Straight ahead</option>
+            <option value="pointer">Pointer — fly towards the mouse or finger</option>
+            <option value="auto">Auto drift</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="o-nebula"> Nebula backdrop</label>
+          <label class="chk"><input type="checkbox" id="o-comets"> Comets</label>
+          <label class="chk"><input type="checkbox" id="o-twinkle"> Twinkling stars</label>
+          <label class="chk" title="Shared links honor this setting when they include the fs URL option">
+            <input type="checkbox" id="o-fullscreen"> Start shared link in fullscreen
+          </label>
+          <label class="chk"><input type="checkbox" id="o-clock"> Clock overlay</label>
+          <details class="clock-options" id="clock-options-control" open hidden>
+            <summary class="section-title">Clock options</summary>
+            <label class="chk"><input type="checkbox" id="o-clock-seconds"> Show seconds</label>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-clock-size">Clock size</label>
+              <input type="range" id="s-clock-size" aria-label="Clock size">
+              <span class="ctrl-val" id="v-clock-size"></span>
+            </div>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-clock-position">Vertical position</label>
+              <input type="range" id="s-clock-position" aria-label="Clock vertical position">
+              <span class="ctrl-val" id="v-clock-position"></span>
+            </div>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-clock-horizontal">Horizontal position</label>
+              <input type="range" id="s-clock-horizontal" aria-label="Clock horizontal position">
+              <span class="ctrl-val" id="v-clock-horizontal"></span>
+            </div>
+            <label class="ctrl-label" for="o-clock-alignment" style="display:block;margin:.5rem 0 .3rem">
+              Time and date alignment
+            </label>
+            <select class="sel" id="o-clock-alignment" aria-label="Time and date alignment">
+              <option value="left">Align left</option>
+              <option value="right">Align right</option>
+            </select>
+          </details>
+        </details>
+
+        <details class="section" data-section="options">
+          <summary class="section-title">Options</summary>
+          <label class="chk"><input type="checkbox" id="o-auto"> Auto quality (fewer stars if it runs slowly)</label>
+          <button type="button" class="action-btn red-btn" id="b-reset"><span class="ab-icon">↺</span> Reset
+            Defaults</button>
+          <div class="stat" id="sf-stats" aria-live="off">60 fps · 700 stars</div>
+        </details>
+
+      </div><!-- /sidebar -->
+      <!-- CANVAS -->
+      <div id="canvas-wrap" title="Click to enter fullscreen">
+        <div id="nebula" aria-hidden="true"></div>
+        <canvas id="star-canvas" role="img" aria-label="Animated starfield: stars streaming past the viewer"
+          width="1098" height="480"></canvas>
+        <div id="sf-flash" aria-hidden="true" style="opacity: 0;"></div>
+        <div id="sf-hud" aria-hidden="true"></div>
+        <div id="sf-clock" aria-hidden="true">
+          <div class="t">--:--</div>
+          <div class="d"></div>
+        </div>
+        <div id="fs-hint">⛶ click to fullscreen · move to steer</div>
+      </div>
+
+    </div><!-- /workspace -->
+  </div><!-- /main -->
+
+  <!-- FULLSCREEN EXIT BUTTON -->
+  <div id="fs-controls">
+    <button type="button" class="fs-btn" id="fs-exit">✕ Exit Fullscreen</button>
+    <button type="button" class="fs-btn" id="fs-pause">⏸ Pause</button>
+    <button type="button" class="fs-btn" id="fs-next">⟳ Next mode</button>
+    <button type="button" class="fs-btn" id="fs-clock">◷ Clock</button>
+  </div>
+  <div id="sf-toast" role="status" aria-live="polite"></div>
+
+  <script src="./files/starfield.js"></script>
+</body>
+
+</html>
