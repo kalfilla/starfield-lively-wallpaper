@@ -221,19 +221,45 @@
     "type": "label",
     "value": "Options"
   },
+  "fullscreenSettings": {
+    "type": "label",
+    "value": "Fullscreen"
+  },
   "hideMouse": {
     "text": "Hide mouse cursor in fullscreen",
     "type": "checkbox",
     "value": true
   },
-  "autoQuality": {
-    "text": "Auto quality",
+  "autoFullscreen": {
+    "text": "Auto fullscreen when idle",
     "type": "checkbox",
-    "value": true
+    "value": false
+  },
+  "autoFullscreenDelay": {
+    "max": 120,
+    "min": 0,
+    "step": 1,
+    "text": "Auto fullscreen idle delay (0 disables)",
+    "type": "slider",
+    "value": 30
+  },
+  "autoFullscreenCountdown": {
+    "text": "Show idle countdown",
+    "type": "checkbox",
+    "value": false
   },
   "startStandaloneFullscreen": {
     "text": "Start standalone page in fullscreen",
     "type": "checkbox",
     "value": false
+  },
+  "performanceSettings": {
+    "type": "label",
+    "value": "Performance"
+  },
+  "autoQuality": {
+    "text": "Auto quality",
+    "type": "checkbox",
+    "value": true
   }
 }

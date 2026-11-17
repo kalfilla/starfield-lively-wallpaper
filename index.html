@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Starfield Screensaver — Warp Speed Space Flight in Your Browser</title>
   <meta name="description"
-    content="Free starfield screensaver in your browser: fly through space at warp speed in 8 modes — Hyperspace, Warp Jump, Wormhole, Galaxy and Retro. Fullscreen, no download.">
+    content="Free starfield screensaver in your browser: customize speed, color, steering, effects, and clock. Fullscreen with optional idle activation; no download.">
   <link rel="stylesheet" href="./files/styles.css">
   <script src="./files/theme.js"></script>
 </head>
@@ -14,14 +14,18 @@
 <body>
   <!-- MAIN -->
   <div id="main">
+    <header id="site-banner">
+      <h1>STARFIELD</h1>
+      <p>Starfield Screensaver<span aria-hidden="true">_</span></p>
+    </header>
     <!-- WORKSPACE -->
     <div id="workspace">
       <!-- SIDEBAR -->
       <div id="sidebar">
+        <div id="sidebar-scroll">
         <details class="section" data-section="screensaver" open>
           <summary class="section-title">Screensaver</summary>
-          <p class="rm-note" id="rm-note" hidden="">Your device asks for reduced motion, so the page started in the calm
-            Zen mode.</p>
+          <p class="rm-note" id="rm-note" hidden="">Reduced motion is enabled, so the starfield starts with fewer effects.</p>
           <button type="button" class="action-btn primary" id="b-fs"><span class="ab-icon">⛶</span> Enter
             Fullscreen</button>
           <button type="button" class="action-btn" id="btn-pause"><span class="ab-icon">⏸</span> Pause</button>
@@ -145,7 +149,7 @@
             </div>
             <div class="ctrl-row" style="margin-top:.4rem">
               <label class="ctrl-label" for="custom-color">Custom</label>
-              <input type="color" id="custom-color" value="#ffffff" title="Custom color">
+              <input type="color" id="custom-color" value="#ffffff" title="Custom color" class="color-swatch">
               <span class="ctrl-val" id="custom-color-val" style="font-size:.55rem;min-width:4rem">#bfe0ff</span>
             </div>
           </details>
@@ -208,22 +212,116 @@
               <input type="checkbox" id="o-fullscreen"> Start shared link in fullscreen
             </label>
             <label class="chk"><input type="checkbox" id="o-hide-mouse"> Hide mouse cursor in fullscreen</label>
+            <label class="chk"><input type="checkbox" id="o-auto-fullscreen"> Auto fullscreen when idle</label>
+            <div id="auto-fullscreen-options" hidden>
+              <div class="ctrl-row">
+                <label class="ctrl-label" for="s-auto-fullscreen-delay" title="Seconds; 0 disables auto fullscreen">Idle delay</label>
+                <input type="range" id="s-auto-fullscreen-delay" aria-label="Auto fullscreen idle delay">
+                <span class="ctrl-val" id="v-auto-fullscreen-delay"></span>
+              </div>
+              <label class="chk"><input type="checkbox" id="o-auto-fullscreen-countdown"> Show idle countdown</label>
+            </div>
           </details>
           <details class="sub-options" open>
             <summary class="section-title">Performance</summary>
             <label class="chk"><input type="checkbox" id="o-auto"> Auto quality (fewer stars if it runs slowly)</label>
             <div class="stat" id="sf-stats" aria-live="off">60 fps · 700 stars</div>
           </details>
-          <button type="button" class="action-btn red-btn" id="b-reset"><span class="ab-icon">↺</span> Reset
-            Defaults</button>
         </details>
 
+        <details class="section" data-section="about">
+          <summary class="section-title">About &amp; shortcuts</summary>
+          <p class="about-intro">Quick controls and share-link keys for the screensaver.</p>
+          <div class="about-shortcuts">
+            <div class="about-row">
+              <span class="about-keys"><kbd>F</kbd></span><span>Toggle fullscreen.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>Esc</kbd> / <kbd>F11</kbd></span><span>Exit fullscreen.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>Space</kbd></span><span>Pause or resume.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>↑</kbd> <kbd>↓</kbd></span><span>Increase or decrease speed.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>←</kbd> <kbd>→</kbd></span><span>Adjust roll.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>R</kbd></span><span>Reset defaults.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>C</kbd> <kbd>N</kbd></span><span>Toggle clock / nebula.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>M</kbd></span><span>Cycle straight, pointer, and auto-drift steering.</span>
+            </div>
+            <div class="about-row">
+              <span class="about-keys"><kbd>P</kbd></span><span>Save the current view as a PNG.</span>
+            </div>
+          </div>
+          <p class="about-intro">
+            Click the canvas to enter fullscreen. Pointer steering follows mouse or touch; the link button copies your
+            settings. Auto fullscreen exits when activity resumes. A delay of 0 disables it.
+          </p>
+          <details class="about-url">
+            <summary class="about-url-summary">Share URL keys</summary>
+            <dl class="about-url-list">
+              <div class="about-url-row">
+                <dt>Flight</dt>
+                <dd><code>n</code> stars · <code>sp</code> speed · <code>w</code> warp · <code>sz</code> size ·
+                  <code>g</code> glow · <code>tr</code> trail · <code>ro</code> roll
+                </dd>
+              </div>
+              <div class="about-url-row">
+                <dt>Appearance</dt>
+                <dd><code>c</code> color · <code>cm</code> color mode · <code>nb</code> nebula · <code>co</code>
+                  comets · <code>tw</code> twinkle
+                </dd>
+              </div>
+              <div class="about-url-row">
+                <dt>Steering</dt>
+                <dd><code>st</code> steering (<code>off</code>/<code>pointer</code>/<code>auto</code>) · <code>ad</code>
+                  drift direction · <code>as</code> drift speed · <code>ai</code> range · <code>ax</code>/<code>ay</code>
+                  horizontal/vertical speed
+                </dd>
+              </div>
+              <div class="about-url-row">
+                <dt>Clock</dt>
+                <dd><code>cl</code> clock · <code>cs</code> seconds · <code>cz</code> size · <code>cv</code>/<code>ch</code>
+                  vertical/horizontal position · <code>cp</code> placement · <code>ca</code> alignment
+                </dd>
+              </div>
+              <div class="about-url-row">
+                <dt>Fullscreen</dt>
+                <dd><code>hm</code> hide mouse · <code>fs</code> start linked page fullscreen · <code>af</code> auto
+                  fullscreen · <code>afd</code> idle delay · <code>afc</code> countdown
+                </dd>
+              </div>
+              <div class="about-url-row">
+                <dt>Performance</dt>
+                <dd><code>aq</code> auto quality</dd>
+              </div>
+            </dl>
+          </details>
+          <p class="about-intro">
+            <code>st</code> is short for steering. For example, <code>?st=pointer</code> turns on pointer steering.
+          </p>
+        </details>
+        </div>
+        <div id="sidebar-footer">
+          <button type="button" class="action-btn red-btn" id="b-reset"><span class="ab-icon">↺</span> Reset Defaults</button>
+        </div>
       </div><!-- /sidebar -->
       <!-- CANVAS -->
       <div id="canvas-wrap" title="Click to enter fullscreen">
         <div id="nebula" aria-hidden="true"></div>
         <canvas id="star-canvas" role="img" aria-label="Animated starfield: stars streaming past the viewer"
           width="1098" height="480"></canvas>
+        <div id="auto-fullscreen-countdown" hidden aria-live="off">
+          auto fullscreen in <span id="auto-fullscreen-seconds">30</span>s
+        </div>
         <div id="sf-flash" aria-hidden="true" style="opacity: 0;"></div>
         <div id="sf-hud" aria-hidden="true"></div>
         <div id="sf-clock" aria-hidden="true">
@@ -240,7 +338,6 @@
   <div id="fs-controls">
     <button type="button" class="fs-btn" id="fs-exit">✕ Exit Fullscreen</button>
     <button type="button" class="fs-btn" id="fs-pause">⏸ Pause</button>
-    <button type="button" class="fs-btn" id="fs-next">⟳ Next mode</button>
     <button type="button" class="fs-btn" id="fs-clock">◷ Clock</button>
   </div>
   <div id="fs-message" role="status">Press Esc or F11 to exit fullscreen</div>

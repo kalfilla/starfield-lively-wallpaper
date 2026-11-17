@@ -39,6 +39,9 @@
       autoDriftHorizontalSpeed: { min: 0, max: 100, step: 2, value: 20 },
       autoDriftVerticalSpeed: { min: 0, max: 100, step: 2, value: 20 },
       hideMouse: { value: true },
+      autoFullscreen: { value: false },
+      autoFullscreenDelay: { min: 0, max: 120, step: 1, value: 30 },
+      autoFullscreenCountdown: { value: false },
       autoQuality: { value: true },
       startStandaloneFullscreen: { value: false },
     };
@@ -264,6 +267,26 @@
       lively: 'hideMouse',
       control: 'o-hide-mouse',
     },
+    autoFullscreen: {
+      type: 'boolean',
+      query: 'af',
+      lively: 'autoFullscreen',
+      control: 'o-auto-fullscreen',
+    },
+    autoFullscreenDelay: {
+      type: 'number',
+      query: 'afd',
+      lively: 'autoFullscreenDelay',
+      control: 's-auto-fullscreen-delay',
+      valueControl: 'v-auto-fullscreen-delay',
+      unit: 's',
+    },
+    autoFullscreenCountdown: {
+      type: 'boolean',
+      query: 'afc',
+      lively: 'autoFullscreenCountdown',
+      control: 'o-auto-fullscreen-countdown',
+    },
     auto: { type: 'boolean', query: 'aq', lively: 'autoQuality', control: 'o-auto' },
     fullscreen: {
       type: 'boolean',
@@ -323,34 +346,14 @@
   }
   loadLivelySettings();
 
-  /* ── presets ─────────────────────────────────────────────── */
-  // BASE provides defaults; presets override only the settings they define.
-  function P(o) {
-    var r = {},
-      k;
-    for (k in BASE) r[k] = BASE[k];
-    for (k in o)
-      r[k] = Object.prototype.hasOwnProperty.call(SETTINGS, k) ? normalizeSetting(k, o[k]) : o[k];
-    return r;
+  function makeDefaultConfig() {
+    var defaults = {};
+    Object.keys(BASE).forEach(function (key) {
+      defaults[key] = BASE[key];
+    });
+    return defaults;
   }
-  var PRESETS = {
-    classic: P({}),
-    zen: P({
-      count: 220,
-      speed: 1,
-      warp: 0,
-      size: 7,
-      glow: 4,
-      trail: 0,
-      roll: 0,
-      cm: 'real',
-      steer: 'off',
-      nebula: false,
-      comets: false,
-      twinkle: false,
-    }),
-  };
-  var PRESET_KEYS = Object.keys(PRESETS);
+
   var LIM = {};
   Object.keys(SETTINGS).forEach(function (key) {
     if (SETTINGS[key].range) LIM[key] = SETTINGS[key].range;
@@ -373,30 +376,18 @@
   LIVELY_LABELS.appearanceSettings = true;
   LIVELY_LABELS.clockSettings = true;
   LIVELY_LABELS.optionsSettings = true;
-  var PRESET_PREFERENCES = [
-    'auto',
-    'clock',
-    'clockSeconds',
-    'clockSize',
-    'clockPosition',
-    'clockHorizontalPosition',
-    'clockPlacement',
-    'clockAlignment',
-    'driftDirection',
-    'driftSpeed',
-    'driftStrength',
-    'driftHorizontalSpeed',
-    'driftVerticalSpeed',
-    'fullscreen',
-  ];
+  LIVELY_LABELS.fullscreenSettings = true;
+  LIVELY_LABELS.performanceSettings = true;
 
   /* ── state ───────────────────────────────────────────────── */
-  var cfg = P({}),
-    curPreset = 'classic',
+  var cfg = makeDefaultConfig(),
     paused = false,
     isFullscreen = false,
     pseudoFs = false,
-    livelyMode = false;
+    livelyMode = false,
+    autoFullscreenLaunched = false,
+    autoFullscreenCancelled = false,
+    lastActivity = Date.now();
   var W = 800,
     H = 480,
     res = 1,
@@ -429,8 +420,7 @@
     nebKind = '',
     galCv = null,
     lastHud = '';
-  var saveTimer = 0,
-    dirty = false;
+  var saveTimer = 0;
 
   function rngFrom(seed) {
     var a = seed >>> 0;
@@ -501,12 +491,6 @@
       [0, 200, 255],
       [160, 60, 255],
     ],
-    zen: [
-      [40, 120, 200],
-      [90, 60, 200],
-      [20, 170, 160],
-      [30, 60, 140],
-    ],
     galaxy: [
       [255, 170, 90],
       [100, 120, 255],
@@ -520,7 +504,7 @@
       c = document.createElement('canvas');
     c.width = c.height = S;
     var g = c.getContext('2d'),
-      rnd = rngFrom(kind === 'zen' ? 21 : kind === 'galaxy' ? 33 : 9),
+      rnd = rngFrom(kind === 'galaxy' ? 33 : 9),
       pal = NEB_PAL[kind] || NEB_PAL.nebula;
     g.fillStyle = '#000';
     g.fillRect(0, 0, S, S);
@@ -999,10 +983,9 @@
       var el = $(SETTINGS[k].control);
       if (el) el.checked = !!cfg[k];
     });
-    document.querySelectorAll('.preset-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.preset === curPreset && !dirty);
-    });
     clockEl.classList.toggle('on', !!cfg.clock);
+    $('auto-fullscreen-options').hidden = !cfg.autoFullscreen;
+    updateAutoFullscreenCountdown();
     $('fs-hint').textContent =
       cfg.steer === 'pointer' ? '⛶ click to fullscreen · move to steer' : '⛶ click to fullscreen';
     var cb = $('fs-clock');
@@ -1016,9 +999,6 @@
       var progress = max > min ? ((value - min) / (max - min)) * 100 : 0;
       range.style.setProperty('--range-progress', clamp(progress, 0, 100) + '%');
     });
-  }
-  function markDirty() {
-    dirty = true;
   }
   function persist() {
     // Lively stores settings per wallpaper/display; don't overwrite browser preferences.
@@ -1034,7 +1014,7 @@
         document.querySelectorAll('#sidebar .section[data-section]').forEach(function (section) {
           sections[section.dataset.section] = section.open;
         });
-        localStorage.setItem('sf2', JSON.stringify({ cfg: cfg, preset: curPreset, sections: sections }));
+        localStorage.setItem('sf2', JSON.stringify({ cfg: cfg, sections: sections }));
       } catch (e) {
         console.warn('Could not save starfield settings.', e);
       }
@@ -1049,23 +1029,24 @@
     syncUI();
     persist();
   }
-  function applyPreset(name, keepPaused, resetPreferences) {
-    var p = PRESETS[name];
-    if (!p) return;
-    // Keep user preferences intact when switching animation presets.
-    var preferences = {};
-    if (!resetPreferences)
-      PRESET_PREFERENCES.forEach(function (key) {
-        preferences[key] = cfg[key];
-      });
-    var k;
-    for (k in p) cfg[k] = p[k];
-    if (!resetPreferences)
-      PRESET_PREFERENCES.forEach(function (key) {
-        cfg[key] = preferences[key];
-      });
-    curPreset = name;
-    dirty = false;
+  function setKey(k, v) {
+    var value = normalizeSetting(k, v);
+    if (value === null) {
+      console.warn('Ignoring invalid starfield setting "' + k + '".');
+      return;
+    }
+    cfg[k] = value;
+    if (k === 'autoFullscreen' && !value) exitAutoFullscreen();
+    if (k === 'count') {
+      qScale = 1;
+    }
+    afterChange(false);
+  }
+  function resetDefaults() {
+    var defaults = makeDefaultConfig();
+    Object.keys(defaults).forEach(function (key) {
+      cfg[key] = defaults[key];
+    });
     qScale = 1;
     lowSecs = 0;
     vx = vy = 0;
@@ -1077,26 +1058,7 @@
     flashEl.style.opacity = '0';
     fullRebuild();
     afterChange(false);
-    if (!keepPaused && paused) setPaused(false);
-  }
-  function nextPreset() {
-    applyPreset(PRESET_KEYS[(PRESET_KEYS.indexOf(curPreset) + 1) % PRESET_KEYS.length]);
-  }
-  function setKey(k, v) {
-    var value = normalizeSetting(k, v);
-    if (value === null) {
-      console.warn('Ignoring invalid starfield setting "' + k + '".');
-      return;
-    }
-    cfg[k] = value;
-    if (k === 'count') {
-      qScale = 1;
-    }
-    markDirty();
-    afterChange(false);
-  }
-  function resetDefaults() {
-    applyPreset('classic', false, true);
+    if (paused) setPaused(false);
   }
 
   // The settings registry is the source of truth for all slider markup values.
@@ -1118,11 +1080,6 @@
     var el = $(SETTINGS[k].control);
     el.addEventListener('input', function () {
       setKey(k, +el.value / (SETTINGS[k].inputScale || 1));
-    });
-  });
-  document.querySelectorAll('.preset-btn').forEach(function (b) {
-    b.addEventListener('click', function () {
-      applyPreset(b.dataset.preset);
     });
   });
   document.querySelectorAll('.color-swatch[data-color]').forEach(function (s) {
@@ -1168,7 +1125,6 @@
   $('fs-pause').addEventListener('click', function () {
     setPaused(!paused);
   });
-  $('fs-next').addEventListener('click', nextPreset);
   $('fs-clock').addEventListener('click', function () {
     setKey('clock', !cfg.clock);
   });
@@ -1246,7 +1202,7 @@
     } catch (e) { }
     wl = null;
   }
-  function enterFullscreen() {
+  function enterFullscreen(automatic) {
     // Lively already owns the full-screen desktop surface.
     if (livelyMode || isFullscreen) return;
     try {
@@ -1258,14 +1214,19 @@
         el.webkitRequestFullscreen ||
         el.mozRequestFullScreen ||
         el.msRequestFullscreen;
+    function useViewportFullscreen() {
+      if (automatic && !autoFullscreenCancelled)
+        toast('Browser blocked fullscreen; using viewport mode');
+      pseudoEnter();
+    }
     if (req) {
       try {
         var r = req.call(el);
-        if (r && r.catch) r.catch(pseudoEnter);
+        if (r && r.catch) r.catch(useViewportFullscreen);
       } catch (e) {
-        pseudoEnter();
+        useViewportFullscreen();
       }
-    } else pseudoEnter();
+    } else useViewportFullscreen();
   }
   function pseudoEnter() {
     pseudoFs = true;
@@ -1284,11 +1245,88 @@
       onFsChange();
     }
   }
+  function exitAutoFullscreen() {
+    if (!autoFullscreenLaunched) return;
+    autoFullscreenLaunched = false;
+    if (isFullscreen) exitFullscreen();
+    else autoFullscreenCancelled = true;
+  }
+  function isFullscreenShortcut(event) {
+    if (event.type !== 'keydown') return false;
+    var tag = event.target && event.target.tagName;
+    if (
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      tag === 'SELECT' ||
+      tag === 'TEXTAREA'
+    ) {
+      return false;
+    }
+    return event.key === 'Escape' || (event.key.length === 1 && event.key.toLowerCase() === 'f');
+  }
+  function handleActivity(event) {
+    lastActivity = Date.now();
+    if (autoFullscreenLaunched && !isFullscreenShortcut(event)) exitAutoFullscreen();
+    updateAutoFullscreenCountdown();
+  }
+  function updateAutoFullscreenCountdown() {
+    var countdown = $('auto-fullscreen-countdown');
+    var show =
+      cfg.autoFullscreen &&
+      cfg.autoFullscreenCountdown &&
+      cfg.autoFullscreenDelay > 0 &&
+      !livelyMode &&
+      !isFullscreen &&
+      !autoFullscreenLaunched &&
+      document.visibilityState === 'visible';
+    if (!show) {
+      countdown.hidden = true;
+      return;
+    }
+
+    var remaining = Math.ceil(
+      Math.max(0, cfg.autoFullscreenDelay * 1000 - (Date.now() - lastActivity)) / 1000,
+    );
+    if (remaining === 0) {
+      countdown.hidden = true;
+      return;
+    }
+    $('auto-fullscreen-seconds').textContent = String(remaining);
+    countdown.hidden = false;
+  }
+  function checkAutoFullscreen() {
+    if (!cfg.autoFullscreen || cfg.autoFullscreenDelay === 0 || livelyMode) {
+      exitAutoFullscreen();
+      updateAutoFullscreenCountdown();
+      return;
+    }
+    updateAutoFullscreenCountdown();
+    if (
+      document.visibilityState !== 'visible' ||
+      isFullscreen ||
+      autoFullscreenLaunched ||
+      Date.now() - lastActivity < cfg.autoFullscreenDelay * 1000
+    ) {
+      return;
+    }
+    autoFullscreenCancelled = false;
+    autoFullscreenLaunched = true;
+    enterFullscreen(true);
+  }
   document.addEventListener('fullscreenchange', onFsChange);
   document.addEventListener('webkitfullscreenchange', onFsChange);
   function onFsChange() {
     isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement) || pseudoFs;
-    if (!isFullscreen) pseudoFs = false;
+    if (isFullscreen && autoFullscreenCancelled) {
+      autoFullscreenCancelled = false;
+      exitFullscreen();
+      return;
+    }
+    if (!isFullscreen) {
+      pseudoFs = false;
+      autoFullscreenLaunched = false;
+    }
     wrap.classList.toggle('fullscreen-active', isFullscreen);
     document.body.classList.toggle('in-fullscreen', isFullscreen);
     if (isFullscreen) wrap.removeAttribute('title');
@@ -1298,6 +1336,7 @@
     } else {
       lockWake();
     }
+    updateAutoFullscreenCountdown();
     requestAnimationFrame(function () {
       sizeCanvas();
       rebuild();
@@ -1307,9 +1346,15 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') {
       last = 0;
+      lastActivity = Date.now();
       if (isFullscreen) lockWake();
+      updateAutoFullscreenCountdown();
     }
   });
+  ['pointermove', 'pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (eventName) {
+    document.addEventListener(eventName, handleActivity, { passive: true });
+  });
+  setInterval(checkAutoFullscreen, 250);
   if (window.ResizeObserver)
     new ResizeObserver(function () {
       var oa = A;
@@ -1369,19 +1414,18 @@
       }
       var a = document.createElement('a');
       a.href = URL.createObjectURL(b);
-      a.download = 'starfield-' + curPreset + '.png';
+      a.download = 'starfield.png';
       document.body.appendChild(a);
       a.click();
       setTimeout(function () {
         URL.revokeObjectURL(a.href);
         a.remove();
       }, 500);
-      toast('Saved starfield-' + curPreset + '.png');
+      toast('Saved starfield.png');
     }, 'image/png');
   }
   function buildQuery() {
     var q = new URLSearchParams();
-    q.set('m', curPreset);
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
       var value = cfg[key];
@@ -1408,19 +1452,15 @@
   }
   function loadQuery(qs) {
     var q = new URLSearchParams(qs);
-    if (!q.has('m')) return false;
-    var m = q.get('m');
-    if (!PRESETS[m]) return false;
-    var k;
-    for (k in PRESETS[m]) cfg[k] = PRESETS[m][k];
-    curPreset = m;
+    var hasSettings = false;
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
       if (!q.has(setting.query)) return;
+      hasSettings = true;
       var value = settingFromQuery(key, q.get(setting.query));
       if (value !== null) cfg[key] = value;
     });
-    return true;
+    return hasSettings;
   }
 
   function normalizeSetting(key, value) {
@@ -1503,10 +1543,6 @@
       setKey('steer', cfg.steer === 'off' ? 'pointer' : cfg.steer === 'pointer' ? 'auto' : 'off');
     else if (lk === 'p') savePNG();
     else if (key === 'Escape' && isFullscreen) exitFullscreen();
-    else {
-      var idx = parseInt(key, 10) - 1;
-      if (idx >= 0 && idx < PRESET_KEYS.length) applyPreset(PRESET_KEYS[idx]);
-    }
   });
 
   // Lively reads LivelyProperties.json and calls this function for each setting.
@@ -1562,21 +1598,25 @@
       console.warn('Could not read saved starfield settings.', e);
     }
     if (!fromUrl) {
-      if (saved && saved.cfg && typeof saved.cfg === 'object' && PRESETS[saved.preset]) {
+      if (saved && saved.cfg && typeof saved.cfg === 'object') {
         Object.keys(SETTINGS).forEach(function (key) {
           if (!(key in saved.cfg)) return;
           var value = normalizeSetting(key, saved.cfg[key]);
           if (value !== null) cfg[key] = value;
         });
-        curPreset = saved.preset;
-        cfg.style = PRESETS[curPreset].style;
-        cfg.neb = PRESETS[curPreset].neb;
       } else if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        var zen = PRESETS.zen;
-        Object.keys(zen).forEach(function (key) {
-          cfg[key] = zen[key];
-        });
-        curPreset = 'zen';
+        cfg.count = 220;
+        cfg.speed = 1;
+        cfg.warp = 0;
+        cfg.size = 7;
+        cfg.glow = 4;
+        cfg.trail = 0;
+        cfg.roll = 0;
+        cfg.cm = 'real';
+        cfg.steer = 'off';
+        cfg.nebula = false;
+        cfg.comets = false;
+        cfg.twinkle = false;
         var note = $('rm-note');
         if (note) note.hidden = false;
       }
@@ -1609,10 +1649,6 @@
     get cfg() {
       return cfg;
     },
-    get preset() {
-      return curPreset;
-    },
-    applyPreset: applyPreset,
     step: step,
     sim: function (sec) {
       var n = Math.round(sec * 60);

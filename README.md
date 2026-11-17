@@ -25,8 +25,8 @@ Default** option in the customization panel to reload the supplied defaults.
 
 The Lively controls cover star count, speed, warp, star size, glow, trail, roll,
 star color and color mode, steering, auto-drift direction and speed, nebula,
-comets, twinkle, clock options, fullscreen mouse visibility, and auto quality.
-Lively calls `livelyPropertyListener(name, value)` when a control changes; the
+comets, twinkle, clock options, fullscreen behavior, and auto quality. Lively
+calls `livelyPropertyListener(name, value)` when a control changes; the
 wallpaper applies the setting immediately.
 
 When the clock overlay is enabled, its options include seconds, size, alignment,
@@ -44,6 +44,21 @@ When **Hide mouse cursor in fullscreen** is enabled, the cursor and fullscreen
 controls are hidden. Moving the mouse briefly shows an exit-key hint instead.
 Shared settings links use `hm=1` to hide the cursor and `hm=0` to keep it
 visible; copied links include the current choice.
+On the standalone browser page, **Auto fullscreen when idle** enters fullscreen
+after the configured idle delay and exits again as soon as activity resumes.
+This only exits fullscreen when the idle option initiated it; Lively already
+owns the desktop-sized surface. The delay ranges from 0 to 120 seconds; 0
+disables the idle trigger. Browsers may block native fullscreen without a user
+gesture; if that happens, the page uses its viewport fullscreen and shows a
+notice. An optional `auto fullscreen in Ns` countdown appears inside the canvas;
+shared links use `af=1` to enable auto fullscreen, `afd` for the delay in
+seconds, and `afc=1` to show the countdown.
+The standalone settings page has an intermittently glitching `STARFIELD` banner
+above the workspace. It is separate from the animated canvas, hidden in
+fullscreen and Lively, and still when reduced motion is requested. The sidebar's
+About section lists keyboard shortcuts and all share-URL keys (`st` is the
+short key for steering). **Reset Defaults** stays at the bottom of the options
+bar while its settings scroll independently.
 
 `files/starfield.js` first loads settings from `LivelyProperties.json`. Browsers
 block that fetch when the page is opened directly as a `file://` URL, so
