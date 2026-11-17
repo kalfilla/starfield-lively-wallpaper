@@ -53,12 +53,17 @@ gesture; if that happens, the page uses its viewport fullscreen and shows a
 notice. An optional `auto fullscreen in Ns` countdown appears inside the canvas;
 shared links use `af=1` to enable auto fullscreen, `afd` for the delay in
 seconds, and `afc=1` to show the countdown.
-The standalone settings page has an intermittently glitching `STARFIELD` banner
-above the workspace. It is separate from the animated canvas, hidden in
-fullscreen and Lively, and still when reduced motion is requested. The sidebar's
-About section lists keyboard shortcuts and all share-URL keys (`st` is the
-short key for steering). **Reset Defaults** stays at the bottom of the options
-bar while its settings scroll independently.
+The interface uses the locally bundled Source Code Pro font, and the standalone
+settings page has a compact Allerta Stencil `STARFIELD` banner with green/cyan
+shadow layers, randomized letter glitches, and jitter; the underscore cursor
+blinks. Both fonts are available offline. Their SIL OFL licenses are in
+`files/fonts/SourceCodePro-OFL.txt` and `files/fonts/OFL.txt`. The effects stop
+when reduced motion is requested, and the banner is hidden in fullscreen and
+Lively. The sidebar's About section lists keyboard shortcuts, all share-URL
+keys, and how to compose a URL: use `?` before the first key and `&` to combine
+more, such as `?hm=1&af=1`. Set `hm=1` to hide the cursor or `hm=0` to keep it
+visible. **Reset Defaults** stays at the bottom of the options bar while its
+settings scroll independently. The themed SVG favicon is in `files/favicon.svg`.
 
 `files/starfield.js` first loads settings from `LivelyProperties.json`. Browsers
 block that fetch when the page is opened directly as a `file://` URL, so

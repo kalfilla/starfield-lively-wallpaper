@@ -1,38 +1,18 @@
 /* Font definitions: Latin glyphs */
-/* latin */
 @font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/l/font?kit=tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8lqwBNntkaToggR7BYXHKPxDcwg&skey=48ad01c60053c2ae&v=v24) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* latin */
-@font-face {
-  font-family: 'JetBrains Mono';
+  font-family: 'Allerta Stencil';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/l/font?kit=tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8lqwBNntkaToggR7BYXHKPxDcwg&skey=48ad01c60053c2ae&v=v24) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url('./fonts/AllertaStencil-Regular.woff2') format('woff2');
 }
-/* latin */
+
 @font-face {
-  font-family: 'JetBrains Mono';
+  font-family: 'Source Code Pro';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 300 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/l/font?kit=tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8lqwBNntkaToggR7BYXHKPxDcwg&skey=48ad01c60053c2ae&v=v24) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* latin */
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/l/font?kit=tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8lqwBNntkaToggR7BYXHKPxDcwg&skey=48ad01c60053c2ae&v=v24) format('woff2');
+  src: url('./fonts/SourceCodePro-Latin-Variable.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -59,7 +39,7 @@
       --white: #e8f4f8;
       --dim: #4a7080;
       --dim2: #1a2a30;
-      --font: 'JetBrains Mono', monospace;
+      --font: 'Source Code Pro', monospace;
     }
 
     html,
@@ -188,7 +168,7 @@
     #site-banner {
       flex: 0 0 92px;
       height: 92px;
-      padding: .65rem 1.25rem .55rem;
+      padding: .45rem 1.25rem .4rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -198,52 +178,77 @@
       border-bottom: 1px solid var(--border)
     }
 
-    #site-banner h1 {
+    #site-banner .banner-title {
       position: relative;
       isolation: isolate;
+      margin: 0;
+      --banner-title-scale-x: 1.05;
+      width: max-content;
       color: var(--green);
-      font-family: var(--font);
-      font-size: clamp(2.4rem, 4.5vw, 3.2rem);
-      font-weight: 700;
-      letter-spacing: -.045em;
+      font-family: 'Allerta Stencil', var(--font);
+      font-size: clamp(1.35rem, 7.8vw, 4rem);
+      font-weight: 400;
+      letter-spacing: .035em;
       line-height: .95;
+      transform: scaleX(var(--banner-title-scale-x));
       transform-origin: left center;
-      text-shadow: 2px 2px 0 #087348, 4px 4px 0 rgba(0, 255, 136, .16);
-      animation: starfield-glitch 7.4s steps(1, end) infinite
+      text-shadow: 1px 1px 0 #07120d, 2px 2px 0 #087348, 3px 3px 0 var(--cyan),
+        5px 5px 0 rgba(0, 255, 136, .2)
     }
 
-    @keyframes starfield-glitch {
-      0%,
-      91%,
-      100% {
-        transform: translateX(0) skewX(0) scaleX(1);
-        filter: none;
-        text-shadow: 2px 2px 0 #087348, 4px 4px 0 rgba(0, 255, 136, .16)
+    @media(max-width:360px) {
+      #site-banner .banner-title {
+        --banner-title-scale-x: 1
       }
+    }
 
-      92% {
-        transform: translateX(-3px) skewX(-4deg) scaleX(1.04);
-        filter: none;
-        text-shadow: -3px 0 var(--cyan), 3px 0 var(--green)
-      }
+    #site-banner .banner-title::before,
+    #site-banner .banner-title::after {
+      position: absolute;
+      inset: 0;
+      content: attr(data-text);
+      pointer-events: none;
+      opacity: 0
+    }
 
-      93% {
-        transform: translateX(2px) skewX(3deg) scaleX(.98);
-        filter: hue-rotate(35deg);
-        text-shadow: 3px 0 var(--cyan), -2px 0 var(--green)
-      }
+    #site-banner .banner-title::before {
+      color: var(--cyan);
+      clip-path: inset(0 0 58% 0);
+      text-shadow: -2px 0 var(--cyan)
+    }
 
-      94% {
-        transform: translateX(-1px) skewX(-1deg) scaleX(1.01);
-        filter: none;
-        text-shadow: -2px 0 var(--cyan), 2px 0 var(--green)
-      }
+    #site-banner .banner-title::after {
+      color: var(--green);
+      clip-path: inset(58% 0 0 0);
+      text-shadow: 2px 0 #087348
+    }
 
-      95% {
-        transform: translateX(0) skewX(0) scaleX(1);
-        filter: none;
-        text-shadow: 2px 2px 0 #087348, 4px 4px 0 rgba(0, 255, 136, .16)
-      }
+    #site-banner .banner-title.is-glitching {
+      animation: banner-title-jitter .16s steps(2, end) 2
+    }
+
+    #site-banner .banner-title.is-glitching::before,
+    #site-banner .banner-title.is-glitching::after {
+      opacity: .9;
+      animation: banner-title-slice .16s steps(2, end) 2
+    }
+
+    #site-banner .banner-title.is-glitching::after {
+      animation-delay: .025s
+    }
+
+    @keyframes banner-title-jitter {
+      0% { transform: scaleX(var(--banner-title-scale-x)) translate(0); }
+      25% { transform: scaleX(var(--banner-title-scale-x)) translate(-.08em, .02em) skewX(-2deg); }
+      50% { transform: scaleX(var(--banner-title-scale-x)) translate(.1em, -.02em) skewX(2deg); }
+      75% { transform: scaleX(var(--banner-title-scale-x)) translate(-.04em, 0); }
+      100% { transform: scaleX(var(--banner-title-scale-x)) translate(0); }
+    }
+
+    @keyframes banner-title-slice {
+      0% { transform: translateX(-.08em); clip-path: inset(0 0 68% 0); }
+      50% { transform: translateX(.1em); clip-path: inset(38% 0 34% 0); }
+      100% { transform: translateX(-.04em); clip-path: inset(72% 0 0 0); }
     }
 
     #site-banner p {
@@ -253,8 +258,9 @@
       letter-spacing: .04em
     }
 
-    #site-banner p span {
-      color: var(--cyan)
+    #site-banner .banner-cursor {
+      color: var(--cyan);
+      animation: blink .8s step-end infinite
     }
 
     /* ── HERO ── */
@@ -1528,8 +1534,16 @@
         transition: none
       }
 
-      #site-banner h1 {
+      #site-banner .banner-title.is-glitching,
+      #site-banner .banner-title.is-glitching::before,
+      #site-banner .banner-title.is-glitching::after,
+      #site-banner .banner-cursor {
         animation: none
+      }
+
+      #site-banner .banner-title::before,
+      #site-banner .banner-title::after {
+        display: none
       }
     }
 

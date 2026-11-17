@@ -1,7 +1,7 @@
 (async function () {
   'use strict';
 
-  // Keep these runtime values in sync with LivelyProperties.json for file:// use.
+  // Keep embedded defaults in sync with LivelyProperties.json; they are used when its fetch fails.
   var livelyProperties;
   var usingFallback = false;
   try {
@@ -107,12 +107,12 @@
   })();
 
   /* ── settings ────────────────────────────────────────────── */
-  // Values shared with Lively are loaded from LivelyProperties.json.
+  // BASE starts with local-only defaults; loadLivelySettings fills in the Lively-backed values.
   var BASE = {
     style: 'smooth',
     neb: 'nebula',
   };
-  // Keep URL names and control IDs here; Lively supplies shared types and values.
+  // Map runtime keys to URL parameters, Lively property names, and UI controls.
   var SETTINGS = {
     count: {
       type: 'number',
@@ -1001,7 +1001,7 @@
     });
   }
   function persist() {
-    // Lively stores settings per wallpaper/display; don't overwrite browser preferences.
+    // In Lively mode, settings belong to Lively rather than browser localStorage.
     if (livelyMode) {
       clearTimeout(saveTimer);
       return;
