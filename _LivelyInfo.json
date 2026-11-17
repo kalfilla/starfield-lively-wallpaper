@@ -3,9 +3,9 @@
   "Title": "Startfield",
   "Thumbnail": "thumbnail.jpg",
   "Preview": "preview.gif",
-  "Desc": "A customizable animated starfield with adjustable flight, color, and clock overlay settings.",
+  "Desc": "A customizable animated starfield with adjustable flight, color, clock, and fullscreen cursor settings.",
   "Author": "Enric Calafell",
-  "License": "CC BY-NC-SA 4.0",
+  "License": null,
   "Contact": "",
   "Type": 1,
   "FileName": "index.html",
@@ -13,5 +13,5 @@
   "IsAbsolutePath": false,
   "Id": null,
   "Tags": null,
-  "Version": 0
+  "Version": 1
 }

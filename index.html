@@ -111,14 +111,50 @@
             <option value="pointer">Pointer — fly towards the mouse or finger</option>
             <option value="auto">Auto drift</option>
           </select>
+          <details class="sub-options" id="auto-drift-options" open hidden>
+            <summary class="section-title">Auto drift options</summary>
+            <label class="ctrl-label" for="o-drift-direction" style="display:block;margin-bottom:.3rem">
+              Direction
+            </label>
+            <select class="sel" id="o-drift-direction" aria-label="Auto drift direction">
+              <option value="wander">Free wander</option>
+              <option value="left">Left bias</option>
+              <option value="right">Right bias</option>
+              <option value="up">Up bias</option>
+              <option value="down">Down bias</option>
+              <option value="clockwise">Clockwise</option>
+              <option value="counterclockwise">Counterclockwise</option>
+            </select>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-drift-speed">Speed</label>
+              <input type="range" id="s-drift-speed" aria-label="Auto drift speed">
+              <span class="ctrl-val" id="v-drift-speed"></span>
+            </div>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-drift-strength">Movement range</label>
+              <input type="range" id="s-drift-strength" aria-label="Auto drift movement range">
+              <span class="ctrl-val" id="v-drift-strength"></span>
+            </div>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-drift-horizontal">Horizontal speed</label>
+              <input type="range" id="s-drift-horizontal" aria-label="Auto drift horizontal speed">
+              <span class="ctrl-val" id="v-drift-horizontal"></span>
+            </div>
+            <div class="ctrl-row">
+              <label class="ctrl-label" for="s-drift-vertical">Vertical speed</label>
+              <input type="range" id="s-drift-vertical" aria-label="Auto drift vertical speed">
+              <span class="ctrl-val" id="v-drift-vertical"></span>
+            </div>
+          </details>
           <label class="chk"><input type="checkbox" id="o-nebula"> Nebula backdrop</label>
           <label class="chk"><input type="checkbox" id="o-comets"> Comets</label>
           <label class="chk"><input type="checkbox" id="o-twinkle"> Twinkling stars</label>
           <label class="chk" title="Shared links honor this setting when they include the fs URL option">
             <input type="checkbox" id="o-fullscreen"> Start shared link in fullscreen
           </label>
+          <label class="chk"><input type="checkbox" id="o-hide-mouse"> Hide mouse cursor in fullscreen</label>
           <label class="chk"><input type="checkbox" id="o-clock"> Clock overlay</label>
-          <details class="clock-options" id="clock-options-control" open hidden>
+          <details class="sub-options" id="clock-options-control" open hidden>
             <summary class="section-title">Clock options</summary>
             <label class="chk"><input type="checkbox" id="o-clock-seconds"> Show seconds</label>
             <div class="ctrl-row">
@@ -179,6 +215,7 @@
     <button type="button" class="fs-btn" id="fs-next">⟳ Next mode</button>
     <button type="button" class="fs-btn" id="fs-clock">◷ Clock</button>
   </div>
+  <div id="fs-message" role="status">Press Esc or F11 to exit fullscreen</div>
   <div id="sf-toast" role="status" aria-live="polite"></div>
 
   <script src="./files/starfield.js"></script>

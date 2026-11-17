@@ -304,6 +304,34 @@
       display: flex
     }
 
+    #fs-message {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 99999;
+      display: none;
+      padding: .5rem .75rem;
+      border: 1px solid rgba(0, 255, 136, .3);
+      border-radius: 5px;
+      background: rgba(10, 14, 15, .85);
+      color: var(--green);
+      font-family: var(--font);
+      font-size: .72rem;
+      pointer-events: none
+    }
+
+    body.in-fullscreen.hide-mouse #fs-controls {
+      display: none !important
+    }
+
+    body.in-fullscreen.hide-mouse #fs-message {
+      display: none
+    }
+
+    body.in-fullscreen.hide-mouse #fs-message.visible {
+      display: block
+    }
+
     body.in-fullscreen {
       overflow: hidden;
       position: fixed;
@@ -416,19 +444,20 @@
       outline-offset: 4px
     }
 
-    #clock-options-control[hidden] {
+    #clock-options-control[hidden],
+    #auto-drift-options[hidden] {
       display: none
     }
 
-    .clock-options {
+    .sub-options {
       margin-top: .5rem
     }
 
-    .clock-options[open] > .section-title {
+    .sub-options[open] > .section-title {
       margin-bottom: .75rem
     }
 
-    .clock-options[open] > .section-title::before {
+    .sub-options[open] > .section-title::before {
       transform: rotate(90deg)
     }
 
@@ -1195,10 +1224,9 @@
       z-index: 3
     }
 
-    body.in-fullscreen.idle,
-    body.in-fullscreen.idle #canvas-wrap,
-    body.in-fullscreen.idle #star-canvas {
-      cursor: none
+    body.in-fullscreen.hide-mouse,
+    body.in-fullscreen.hide-mouse * {
+      cursor: none !important
     }
 
     #fs-controls {

@@ -32,6 +32,12 @@
       clockVerticalPosition: { min: 4, max: 92, step: 1, value: 10 },
       clockHorizontalPosition: { min: 0, max: 100, step: 1, value: 5 },
       clockAlignment: { value: 0 },
+      autoDriftDirection: { value: 0 },
+      autoDriftSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
+      autoDriftStrength: { min: 0, max: 200, step: 10, value: 100 },
+      autoDriftHorizontalSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
+      autoDriftVerticalSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
+      hideMouse: { value: true },
       autoQuality: { value: true },
       startStandaloneFullscreen: { value: false },
     };
@@ -202,6 +208,48 @@
       values: ['left', 'right'],
       control: 'o-clock-alignment',
     },
+    driftDirection: {
+      type: 'enum',
+      query: 'ad',
+      lively: 'autoDriftDirection',
+      values: ['wander', 'left', 'right', 'up', 'down', 'clockwise', 'counterclockwise'],
+      control: 'o-drift-direction',
+    },
+    driftSpeed: {
+      type: 'number',
+      query: 'as',
+      lively: 'autoDriftSpeed',
+      control: 's-drift-speed',
+      valueControl: 'v-drift-speed',
+    },
+    driftStrength: {
+      type: 'number',
+      query: 'ai',
+      lively: 'autoDriftStrength',
+      control: 's-drift-strength',
+      valueControl: 'v-drift-strength',
+      unit: '%',
+    },
+    driftHorizontalSpeed: {
+      type: 'number',
+      query: 'ax',
+      lively: 'autoDriftHorizontalSpeed',
+      control: 's-drift-horizontal',
+      valueControl: 'v-drift-horizontal',
+    },
+    driftVerticalSpeed: {
+      type: 'number',
+      query: 'ay',
+      lively: 'autoDriftVerticalSpeed',
+      control: 's-drift-vertical',
+      valueControl: 'v-drift-vertical',
+    },
+    hideMouse: {
+      type: 'boolean',
+      query: 'hm',
+      lively: 'hideMouse',
+      control: 'o-hide-mouse',
+    },
     auto: { type: 'boolean', query: 'aq', lively: 'autoQuality', control: 'o-auto' },
     fullscreen: {
       type: 'boolean',
@@ -305,6 +353,7 @@
   var LIVELY_LABELS = Object.create(null);
   LIVELY_LABELS.flightSettings = true;
   LIVELY_LABELS.sceneSettings = true;
+  LIVELY_LABELS.autoDriftOptions = true;
   var PRESET_PREFERENCES = [
     'auto',
     'clock',
@@ -313,6 +362,11 @@
     'clockPosition',
     'clockHorizontalPosition',
     'clockAlignment',
+    'driftDirection',
+    'driftSpeed',
+    'driftStrength',
+    'driftHorizontalSpeed',
+    'driftVerticalSpeed',
     'fullscreen',
   ];
 
@@ -591,8 +645,23 @@
         ty = ptr.y;
       }
     } else if (cfg.steer === 'auto') {
-      tx = Math.sin(t * 0.13) * 0.6 + Math.sin(t * 0.047 + 1) * 0.35;
-      ty = Math.cos(t * 0.09) * 0.4 + Math.sin(t * 0.061) * 0.25;
+      var horizontalTime = t * cfg.driftSpeed * cfg.driftHorizontalSpeed;
+      var verticalTime = t * cfg.driftSpeed * cfg.driftVerticalSpeed;
+      tx = Math.sin(horizontalTime * 0.13) * 0.6 + Math.sin(horizontalTime * 0.047 + 1) * 0.35;
+      ty = Math.cos(verticalTime * 0.09) * 0.4 + Math.sin(verticalTime * 0.061) * 0.25;
+      if (cfg.driftDirection === 'left') tx = -Math.abs(tx);
+      else if (cfg.driftDirection === 'right') tx = Math.abs(tx);
+      else if (cfg.driftDirection === 'up') ty = -Math.abs(ty);
+      else if (cfg.driftDirection === 'down') ty = Math.abs(ty);
+      else if (cfg.driftDirection === 'clockwise' || cfg.driftDirection === 'counterclockwise') {
+        var orbitPhase = t * cfg.driftSpeed * 0.13;
+        tx = Math.sin(orbitPhase * cfg.driftHorizontalSpeed);
+        ty =
+          Math.cos(orbitPhase * cfg.driftVerticalSpeed) *
+          (cfg.driftDirection === 'clockwise' ? -1 : 1);
+      }
+      tx *= cfg.driftStrength / 100;
+      ty *= cfg.driftStrength / 100;
     }
     var k = 1 - Math.exp(-dt * 2.2);
     vx += (tx - vx) * k;
@@ -883,6 +952,9 @@
       if (el) el.value = cfg[k];
       if (v) v.textContent = cfg[k] + (setting.unit || '');
     });
+    document.body.classList.toggle('hide-mouse', !!cfg.hideMouse);
+    $('auto-drift-options').hidden = cfg.steer !== 'auto';
+    $('o-drift-direction').value = cfg.driftDirection;
     $('clock-options-control').hidden = !cfg.clock;
     $('o-clock-alignment').value = cfg.clockAlignment;
     clockEl.style.setProperty('--clock-size', cfg.clockSize + 'rem');
@@ -1048,6 +1120,9 @@
   $('o-clock-alignment').addEventListener('change', function () {
     setKey('clockAlignment', this.value);
   });
+  $('o-drift-direction').addEventListener('change', function () {
+    setKey('driftDirection', this.value);
+  });
   BOOLEAN_SETTINGS.forEach(function (k) {
     $(SETTINGS[k].control).addEventListener('change', function () {
       setKey(k, this.checked);
@@ -1090,20 +1165,12 @@
     $('fs-pause').textContent = paused ? '▶ Resume' : '⏸ Pause';
   }
 
-  /* ── pointer steering + idle cursor ─────────────────────── */
-  var idleT = 0;
+  /* ── pointer steering ────────────────────────────────────── */
   function pointerMove(e) {
     var r = wrap.getBoundingClientRect();
     ptr.x = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
     ptr.y = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
     ptr.active = true;
-    if (isFullscreen) {
-      document.body.classList.remove('idle');
-      clearTimeout(idleT);
-      idleT = setTimeout(function () {
-        document.body.classList.add('idle');
-      }, 2600);
-    }
   }
   wrap.addEventListener('pointermove', pointerMove);
   wrap.addEventListener('pointerdown', pointerMove);
@@ -1195,14 +1262,12 @@
     if (!isFullscreen) pseudoFs = false;
     wrap.classList.toggle('fullscreen-active', isFullscreen);
     document.body.classList.toggle('in-fullscreen', isFullscreen);
+    if (isFullscreen) wrap.removeAttribute('title');
+    else wrap.setAttribute('title', 'Click to enter fullscreen');
     if (!isFullscreen) {
-      document.body.classList.remove('idle');
       unlockWake();
     } else {
       lockWake();
-      idleT = setTimeout(function () {
-        document.body.classList.add('idle');
-      }, 2600);
     }
     requestAnimationFrame(function () {
       sizeCanvas();
@@ -1536,15 +1601,17 @@
   var b = document.body;
   function clr() {
     if (!b.classList.contains('in-fullscreen')) return;
-    var c = document.getElementById('fs-controls');
-    if (c) c.classList.remove('visible');
+    var controls = document.getElementById('fs-controls');
+    var message = document.getElementById('fs-message');
+    if (controls) controls.classList.remove('visible');
+    if (message) message.classList.remove('visible');
   }
   var T;
   document.addEventListener('mousemove', function () {
     if (!b.classList.contains('in-fullscreen')) return;
-    var c = document.getElementById('fs-controls');
-    if (!c) return;
-    c.classList.add('visible');
+    var target = document.getElementById(b.classList.contains('hide-mouse') ? 'fs-message' : 'fs-controls');
+    if (!target) return;
+    target.classList.add('visible');
     clearTimeout(T);
     T = setTimeout(clr, 2500);
   });

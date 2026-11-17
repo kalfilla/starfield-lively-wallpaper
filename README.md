@@ -24,15 +24,23 @@ Default** option in the customization panel to reload the supplied defaults.
 ## Lively controls
 
 The Lively controls cover star count, speed, warp, star size, glow, trail, roll,
-star color and color mode, steering, nebula, comets, twinkle, clock options, and
-auto quality. Lively calls `livelyPropertyListener(name, value)` when a control
-changes; the wallpaper applies the setting immediately.
+star color and color mode, steering, auto-drift direction and speed, nebula,
+comets, twinkle, clock options, fullscreen mouse visibility, and auto quality. Lively calls
+`livelyPropertyListener(name, value)` when a control changes; the wallpaper
+applies the setting immediately.
 
 When the clock overlay is enabled, its clock-options section provides seconds,
 size, and horizontal/vertical position. Both position sliders range from 0% to
 100% and position the clock from the left and bottom edges respectively. This
 can help keep it clear of the Windows taskbar in fullscreen Lively playback.
 The time and date can also be aligned to the left or right edge of each other.
+Selecting **Auto drift** reveals direction, movement range, and overall,
+horizontal, and vertical speed controls. These settings are also available in
+Lively and included in copied settings links.
+When **Hide mouse cursor in fullscreen** is enabled, the cursor and fullscreen
+controls are hidden. Moving the mouse briefly shows an exit-key hint instead.
+Shared settings links use `hm=1` to hide the cursor and `hm=0` to keep it
+visible; copied links include the current choice.
 
 `files/starfield.js` first loads settings from `LivelyProperties.json`. Browsers
 block that fetch when the page is opened directly as a `file://` URL, so
@@ -46,13 +54,6 @@ cached bounds or defaults.
 Lively itself manages the desktop-sized surface. The **Start standalone page in
 fullscreen** property is for the browser page's shareable `fs` setting; it
 doesn't request a second fullscreen window from Lively.
-
-## License
-
-Unless otherwise noted, all content in this repository is licensed under the
-[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
-License](https://creativecommons.org/licenses/by-nc-sa/4.0/). See [LICENSE](./LICENSE)
-for details.
 
 ## References
 

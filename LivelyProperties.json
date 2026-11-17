@@ -89,6 +89,56 @@
     "type": "dropdown",
     "value": 0
   },
+  "autoDriftOptions": {
+    "type": "label",
+    "value": "Auto drift options"
+  },
+  "autoDriftDirection": {
+    "items": [
+      "Free wander",
+      "Left bias",
+      "Right bias",
+      "Up bias",
+      "Down bias",
+      "Clockwise",
+      "Counterclockwise"
+    ],
+    "text": "Auto drift direction",
+    "type": "dropdown",
+    "value": 0
+  },
+  "autoDriftSpeed": {
+    "max": 3,
+    "min": 0.1,
+    "step": 0.1,
+    "text": "Auto drift speed",
+    "type": "slider",
+    "value": 1
+  },
+  "autoDriftStrength": {
+    "max": 200,
+    "min": 0,
+    "step": 10,
+    "text": "Auto drift movement range",
+    "type": "slider",
+    "value": 100
+  },
+  "autoDriftHorizontalSpeed": {
+    "max": 3,
+    "min": 0.1,
+    "step": 0.1,
+    "text": "Auto drift horizontal speed",
+    "type": "slider",
+    "value": 1
+  },
+  "autoDriftVerticalSpeed": {
+    "max": 3,
+    "min": 0.1,
+    "step": 0.1,
+    "text": "Auto drift vertical speed",
+    "type": "slider",
+    "value": 1
+  },
   "nebulaBackdrop": {
     "text": "Nebula backdrop",
     "type": "checkbox",
@@ -146,6 +196,11 @@
     "text": "Time and date alignment",
     "type": "dropdown",
     "value": 0
+  },
+  "hideMouse": {
+    "text": "Hide mouse cursor in fullscreen",
+    "type": "checkbox",
+    "value": true
   },
   "autoQuality": {
     "text": "Auto quality",
