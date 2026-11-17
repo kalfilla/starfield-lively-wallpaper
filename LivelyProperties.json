@@ -59,25 +59,9 @@
     "type": "slider",
     "value": 0
   },
-  "sceneSettings": {
+  "steeringSettings": {
     "type": "label",
-    "value": "Scene"
-  },
-  "starColor": {
-    "text": "Star color",
-    "type": "color",
-    "value": "#FFFFFF"
-  },
-  "colorMode": {
-    "items": [
-      "Fixed color",
-      "Rainbow",
-      "Realistic",
-      "Depth"
-    ],
-    "text": "Color mode",
-    "type": "dropdown",
-    "value": 0
+    "value": "Steering"
   },
   "steering": {
     "items": [
@@ -108,12 +92,12 @@
     "value": 0
   },
   "autoDriftSpeed": {
-    "max": 3,
-    "min": 0.1,
-    "step": 0.1,
+    "max": 100,
+    "min": 0,
+    "step": 2,
     "text": "Auto drift speed",
     "type": "slider",
-    "value": 1
+    "value": 20
   },
   "autoDriftStrength": {
     "max": 200,
@@ -124,20 +108,40 @@
     "value": 100
   },
   "autoDriftHorizontalSpeed": {
-    "max": 3,
-    "min": 0.1,
-    "step": 0.1,
+    "max": 100,
+    "min": 0,
+    "step": 2,
     "text": "Auto drift horizontal speed",
     "type": "slider",
-    "value": 1
+    "value": 20
   },
   "autoDriftVerticalSpeed": {
-    "max": 3,
-    "min": 0.1,
-    "step": 0.1,
+    "max": 100,
+    "min": 0,
+    "step": 2,
     "text": "Auto drift vertical speed",
     "type": "slider",
-    "value": 1
+    "value": 20
+  },
+  "appearanceSettings": {
+    "type": "label",
+    "value": "Appearance"
+  },
+  "starColor": {
+    "text": "Star color",
+    "type": "color",
+    "value": "#FFFFFF"
+  },
+  "colorMode": {
+    "items": [
+      "Fixed color",
+      "Rainbow",
+      "Realistic",
+      "Depth"
+    ],
+    "text": "Color mode",
+    "type": "dropdown",
+    "value": 0
   },
   "nebulaBackdrop": {
     "text": "Nebula backdrop",
@@ -154,10 +158,26 @@
     "type": "checkbox",
     "value": false
   },
+  "clockSettings": {
+    "type": "label",
+    "value": "Clock"
+  },
   "clockOverlay": {
     "text": "Clock overlay",
     "type": "checkbox",
     "value": true
+  },
+  "clockPositionMode": {
+    "items": [
+      "Free position",
+      "Top left",
+      "Top right",
+      "Bottom left",
+      "Bottom right"
+    ],
+    "text": "Clock position",
+    "type": "dropdown",
+    "value": 0
   },
   "showClockSeconds": {
     "text": "Show clock seconds",
@@ -196,6 +216,10 @@
     "text": "Time and date alignment",
     "type": "dropdown",
     "value": 0
+  },
+  "optionsSettings": {
+    "type": "label",
+    "value": "Options"
   },
   "hideMouse": {
     "text": "Hide mouse cursor in fullscreen",

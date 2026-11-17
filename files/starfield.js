@@ -31,12 +31,13 @@
       clockSize: { min: 1, max: 8, step: 0.5, value: 2 },
       clockVerticalPosition: { min: 4, max: 92, step: 1, value: 10 },
       clockHorizontalPosition: { min: 0, max: 100, step: 1, value: 5 },
+      clockPositionMode: { value: 0 },
       clockAlignment: { value: 0 },
       autoDriftDirection: { value: 0 },
-      autoDriftSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
+      autoDriftSpeed: { min: 0, max: 100, step: 2, value: 20 },
       autoDriftStrength: { min: 0, max: 200, step: 10, value: 100 },
-      autoDriftHorizontalSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
-      autoDriftVerticalSpeed: { min: 0.1, max: 3, step: 0.1, value: 1 },
+      autoDriftHorizontalSpeed: { min: 0, max: 100, step: 2, value: 20 },
+      autoDriftVerticalSpeed: { min: 0, max: 100, step: 2, value: 20 },
       hideMouse: { value: true },
       autoQuality: { value: true },
       startStandaloneFullscreen: { value: false },
@@ -201,6 +202,13 @@
       valueControl: 'v-clock-horizontal',
       unit: '%',
     },
+    clockPlacement: {
+      type: 'enum',
+      query: 'cp',
+      lively: 'clockPositionMode',
+      values: ['free', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
+      control: 'o-clock-placement',
+    },
     clockAlignment: {
       type: 'enum',
       query: 'ca',
@@ -219,8 +227,10 @@
       type: 'number',
       query: 'as',
       lively: 'autoDriftSpeed',
+      inputScale: 20,
       control: 's-drift-speed',
       valueControl: 'v-drift-speed',
+      unit: '×',
     },
     driftStrength: {
       type: 'number',
@@ -234,15 +244,19 @@
       type: 'number',
       query: 'ax',
       lively: 'autoDriftHorizontalSpeed',
+      inputScale: 20,
       control: 's-drift-horizontal',
       valueControl: 'v-drift-horizontal',
+      unit: '×',
     },
     driftVerticalSpeed: {
       type: 'number',
       query: 'ay',
       lively: 'autoDriftVerticalSpeed',
+      inputScale: 20,
       control: 's-drift-vertical',
       valueControl: 'v-drift-vertical',
+      unit: '×',
     },
     hideMouse: {
       type: 'boolean',
@@ -280,9 +294,10 @@
         ) {
           throw new Error('Invalid slider definition for "' + setting.lively + '".');
         }
-        setting.range = [property.min, property.max];
-        setting.step = property.step;
-        BASE[key] = property.value;
+        var inputScale = setting.inputScale || 1;
+        setting.range = [property.min / inputScale, property.max / inputScale];
+        setting.step = property.step / inputScale;
+        BASE[key] = property.value / inputScale;
       } else if (setting.type === 'enum') {
         if (
           (!usingFallback && property.type !== 'dropdown') ||
@@ -353,7 +368,11 @@
   var LIVELY_LABELS = Object.create(null);
   LIVELY_LABELS.flightSettings = true;
   LIVELY_LABELS.sceneSettings = true;
+  LIVELY_LABELS.steeringSettings = true;
   LIVELY_LABELS.autoDriftOptions = true;
+  LIVELY_LABELS.appearanceSettings = true;
+  LIVELY_LABELS.clockSettings = true;
+  LIVELY_LABELS.optionsSettings = true;
   var PRESET_PREFERENCES = [
     'auto',
     'clock',
@@ -361,6 +380,7 @@
     'clockSize',
     'clockPosition',
     'clockHorizontalPosition',
+    'clockPlacement',
     'clockAlignment',
     'driftDirection',
     'driftSpeed',
@@ -660,6 +680,8 @@
           Math.cos(orbitPhase * cfg.driftVerticalSpeed) *
           (cfg.driftDirection === 'clockwise' ? -1 : 1);
       }
+      if (cfg.driftSpeed === 0 || cfg.driftHorizontalSpeed === 0) tx = 0;
+      if (cfg.driftSpeed === 0 || cfg.driftVerticalSpeed === 0) ty = 0;
       tx *= cfg.driftStrength / 100;
       ty *= cfg.driftStrength / 100;
     }
@@ -949,14 +971,17 @@
       var setting = SETTINGS[k];
       var el = $(setting.control);
       var v = $(setting.valueControl);
-      if (el) el.value = cfg[k];
+      if (el) el.value = cfg[k] * (setting.inputScale || 1);
       if (v) v.textContent = cfg[k] + (setting.unit || '');
     });
     document.body.classList.toggle('hide-mouse', !!cfg.hideMouse);
     $('auto-drift-options').hidden = cfg.steer !== 'auto';
     $('o-drift-direction').value = cfg.driftDirection;
     $('clock-options-control').hidden = !cfg.clock;
+    $('o-clock-placement').value = cfg.clockPlacement;
+    $('clock-free-position-controls').hidden = cfg.clockPlacement !== 'free';
     $('o-clock-alignment').value = cfg.clockAlignment;
+    clockEl.dataset.position = cfg.clockPlacement;
     clockEl.style.setProperty('--clock-size', cfg.clockSize + 'rem');
     clockEl.style.setProperty('--clock-position', cfg.clockPosition + '%');
     clockEl.style.setProperty('--clock-horizontal-position', cfg.clockHorizontalPosition + '%');
@@ -1079,10 +1104,11 @@
     SLIDERS.forEach(function (key) {
       var setting = SETTINGS[key];
       var control = $(setting.control);
-      control.min = setting.range[0];
-      control.max = setting.range[1];
-      control.step = setting.step;
-      control.value = cfg[key];
+      var inputScale = setting.inputScale || 1;
+      control.min = setting.range[0] * inputScale;
+      control.max = setting.range[1] * inputScale;
+      control.step = setting.step * inputScale;
+      control.value = cfg[key] * inputScale;
     });
   }
 
@@ -1091,7 +1117,7 @@
   SLIDERS.forEach(function (k) {
     var el = $(SETTINGS[k].control);
     el.addEventListener('input', function () {
-      setKey(k, +el.value);
+      setKey(k, +el.value / (SETTINGS[k].inputScale || 1));
     });
   });
   document.querySelectorAll('.preset-btn').forEach(function (b) {
@@ -1119,6 +1145,9 @@
   });
   $('o-clock-alignment').addEventListener('change', function () {
     setKey('clockAlignment', this.value);
+  });
+  $('o-clock-placement').addEventListener('change', function () {
+    setKey('clockPlacement', this.value);
   });
   $('o-drift-direction').addEventListener('change', function () {
     setKey('driftDirection', this.value);
@@ -1409,7 +1438,12 @@
       var min = setting.range[0];
       var max = setting.range[1];
       number = clamp(number, min, max);
-      return clamp(Math.round((number - min) / setting.step) * setting.step + min, min, max);
+      number = clamp(Math.round((number - min) / setting.step) * setting.step + min, min, max);
+      var precision = Math.max(
+        (String(min).split('.')[1] || '').length,
+        (String(setting.step).split('.')[1] || '').length,
+      );
+      return Number(number.toFixed(precision));
     }
     if (setting.type === 'boolean') return typeof value === 'boolean' ? value : null;
     if (setting.type === 'color')
@@ -1499,9 +1533,12 @@
         return;
       }
       value = setting.values[index];
-    } else if (setting.type === 'number' && typeof value !== 'number') {
-      console.warn('Ignoring invalid Lively slider value for "' + name + '".');
-      return;
+    } else if (setting.type === 'number') {
+      if (typeof value !== 'number') {
+        console.warn('Ignoring invalid Lively slider value for "' + name + '".');
+        return;
+      }
+      value /= setting.inputScale || 1;
     }
 
     value = normalizeSetting(key, value);

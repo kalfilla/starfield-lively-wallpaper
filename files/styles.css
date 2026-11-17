@@ -445,12 +445,19 @@
     }
 
     #clock-options-control[hidden],
-    #auto-drift-options[hidden] {
+    #auto-drift-options[hidden],
+    #clock-free-position-controls[hidden] {
       display: none
     }
 
     .sub-options {
-      margin-top: .5rem
+      margin: .5rem 0 .75rem .55rem;
+      padding: .65rem;
+      border: 1px solid var(--border)
+    }
+
+    .sub-options > .section-title {
+      color: var(--green)
     }
 
     .sub-options[open] > .section-title {
@@ -1349,6 +1356,34 @@
         left: 14px;
         bottom: 10px
       }
+    }
+
+    #sf-clock[data-position="top-left"] {
+      top: 5%;
+      right: auto;
+      bottom: auto;
+      left: 5%
+    }
+
+    #sf-clock[data-position="top-right"] {
+      top: 5%;
+      right: 5%;
+      bottom: auto;
+      left: auto
+    }
+
+    #sf-clock[data-position="bottom-left"] {
+      top: auto;
+      right: auto;
+      bottom: 10%;
+      left: 5%
+    }
+
+    #sf-clock[data-position="bottom-right"] {
+      top: auto;
+      right: 5%;
+      bottom: 10%;
+      left: auto
     }
 
     @media(prefers-reduced-motion:reduce) {
