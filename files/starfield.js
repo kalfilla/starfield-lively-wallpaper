@@ -1129,6 +1129,10 @@
     setKey('clock', !cfg.clock);
   });
   wrap.addEventListener('click', function (e) {
+    if (isFullscreen) {
+      exitFullscreen();
+      return;
+    }
     if (
       e.target === canvas ||
       e.target === wrap ||
@@ -1136,7 +1140,7 @@
       e.target.id === 'nebula' ||
       e.target.id === 'sf-flash'
     ) {
-      if (!isFullscreen) enterFullscreen();
+      enterFullscreen();
     }
   });
 
