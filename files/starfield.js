@@ -16,7 +16,7 @@
   } catch (error) {
     console.warn('Unable to fetch LivelyProperties.json; using the embedded fallback.', error);
     livelyProperties = {
-      starCount: { min: 100, max: 1600, step: 50, value: 1200 },
+      starCount: { min: 100, max: 10000, step: 50, value: 1200 },
       speed: { min: 1, max: 10, step: 1, value: 1 },
       warp: { min: 0, max: 10, step: 1, value: 0 },
       starSize: { min: 1, max: 10, step: 1, value: 4 },
@@ -425,7 +425,7 @@
     F = 240,
     RX = 1.6,
     RY = 1;
-  var MAXN = 1300,
+  var MAXN = SETTINGS.count.range[1],
     X = new Float32Array(MAXN),
     Y = new Float32Array(MAXN),
     Z = new Float32Array(MAXN),
@@ -438,7 +438,8 @@
     gAng = 0,
     qScale = 1,
     lowSecs = 0,
-    last = 0;
+    last = 0,
+    visibleStarCount = null;
   var ptr = {
     x: 0,
     y: 0,
@@ -451,6 +452,10 @@
     galCv = null,
     lastHud = '';
   var saveTimer = 0;
+
+  function activeStarCount() {
+    return Math.max(40, Math.min(MAXN, Math.floor(cfg.count * qScale)));
+  }
 
   function rngFrom(seed) {
     var a = seed >>> 0;
@@ -788,7 +793,8 @@
     var warpK = cfg.warp * sc.wp * (zRate / 60) * 6;
     var maxR = cfg.size * 0.45,
       glow = cfg.glow,
-      n = Math.max(40, Math.floor(cfg.count * qScale));
+      n = activeStarCount(),
+      visibleStars = 0;
     var rollRate = cfg.roll * 0.07,
       retro = st === 'retro';
     // clear / fade
@@ -886,6 +892,7 @@
         spawn(i, false);
         continue;
       }
+      if (sx >= 0 && sx < W && sy >= 0 && sy < H) visibleStars++;
       var depth = 1 - z;
       if (retro) {
         var lv = depth < 0.35 ? 0 : depth < 0.6 ? 1 : depth < 0.82 ? 2 : 3,
@@ -932,6 +939,7 @@
         }
       }
     }
+    visibleStarCount = visibleStars;
     ctx.globalAlpha = 1;
     if (comet || cfg.comets) {
       ctx.globalCompositeOperation = 'source-over';
@@ -945,37 +953,47 @@
     var dtRaw = last ? (now - last) / 1000 : 0.016;
     last = now;
     if (!(dtRaw > 0)) dtRaw = 0.016;
-    fpsTick(dtRaw);
     if (paused) return;
     step(Math.min(dtRaw, 0.05));
+    fpsTick(dtRaw);
   }
   var fpsT = 0,
     fpsN = 0,
+    measuredFps = null,
     statEl = $('sf-stats');
+  function updatePerformanceDisplay() {
+    var fpsLabel = 'Measuring FPS';
+    if (paused || document.visibilityState !== 'visible') fpsLabel = '0 fps';
+    else if (measuredFps !== null) fpsLabel = measuredFps.toFixed(1) + ' fps';
+    var starLabel =
+      visibleStarCount === null
+        ? cfg.count.toLocaleString() + ' stars'
+        : cfg.count.toLocaleString() + ' stars ('+ visibleStarCount.toLocaleString() + ')';
+    var text =
+      fpsLabel +
+      ' · ' +
+      starLabel +
+      (qScale < 1 ? ' (auto-reduced)' : '');
+    if (statEl) statEl.textContent = text;
+    $('sf-info-performance').textContent = text;
+  }
   function fpsTick(d) {
     fpsT += d;
     fpsN++;
     if (fpsT >= 1) {
-      var fps = fpsN / fpsT;
+      measuredFps = fpsN / fpsT;
       fpsT = 0;
       fpsN = 0;
       // Lower the star count only after several slow seconds, avoiding brief quality drops.
       if (cfg.auto && !paused && document.visibilityState === 'visible') {
-        if (fps < 38) lowSecs++;
+        if (measuredFps < 38) lowSecs++;
         else lowSecs = 0;
         if (lowSecs >= 3 && qScale > 0.36 && cfg.count * qScale > 160) {
           qScale = Math.max(0.35, qScale * 0.8);
           lowSecs = 0;
         }
       } else lowSecs = 0;
-      if (statEl)
-        statEl.textContent =
-          Math.round(fps) +
-          ' fps · ' +
-          Math.floor(cfg.count * qScale) +
-          ' stars' +
-          (qScale < 1 ? ' (auto-reduced)' : '');
-      $('sf-info-performance').textContent = statEl.textContent;
+      updatePerformanceDisplay();
     }
   }
 
@@ -1017,6 +1035,7 @@
       if (el) el.checked = !!cfg[k];
     });
     clockEl.classList.toggle('on', !!cfg.clock);
+    updatePerformanceDisplay();
     $('auto-fullscreen-options').hidden = !cfg.autoFullscreen;
     updateAutoFullscreenCountdown();
     $('fs-hint').textContent =
@@ -1075,6 +1094,7 @@
     if (k === 'autoFullscreen' && !value) exitAutoFullscreen();
     if (k === 'count') {
       qScale = 1;
+      visibleStarCount = null;
     }
     afterChange(false);
   }
@@ -1084,6 +1104,7 @@
       cfg[key] = defaults[key];
     });
     qScale = 1;
+    visibleStarCount = null;
     lowSecs = 0;
     vx = vy = 0;
     comet = null;
@@ -1183,6 +1204,10 @@
   function setPaused(v) {
     paused = v;
     last = 0;
+    fpsT = 0;
+    fpsN = 0;
+    measuredFps = null;
+    updatePerformanceDisplay();
     var lab = paused
       ? '<span class="ab-icon">▶</span> Resume'
       : '<span class="ab-icon">⏸</span> Pause';
@@ -1320,6 +1345,7 @@
     var info = $('sf-info');
     info.hidden = !cfg.showInformation;
     if (!cfg.showInformation) return;
+    updateInformationPosition(info);
 
     $('sf-info-idle').textContent = formatDuration((now - lastActivity) / 1000);
 
@@ -1347,6 +1373,43 @@
       var remaining = Math.ceil((interval - (elapsed % interval)) / 1000);
       clockInfo.textContent = 'Clock moves in: ' + formatDuration(remaining);
     }
+  }
+  function updateInformationPosition(info) {
+    var position = getInformationPosition();
+    info.dataset.position = position;
+
+    var fullscreenMessage = $('fs-message');
+    var messageVisible =
+      position === 'top-right' &&
+      document.body.classList.contains('in-fullscreen') &&
+      document.body.classList.contains('hide-mouse') &&
+      fullscreenMessage.classList.contains('visible') &&
+      getComputedStyle(fullscreenMessage).display !== 'none';
+    if (messageVisible) {
+      var messageRect = fullscreenMessage.getBoundingClientRect();
+      var canvasRect = wrap.getBoundingClientRect();
+      info.style.top = messageRect.bottom - canvasRect.top + 12 + 'px';
+    } else {
+      info.style.removeProperty('top');
+    }
+  }
+  function getInformationPosition() {
+    if (!cfg.clock || !clockEl.classList.contains('on')) return 'top-right';
+
+    var isUpper;
+    var isRight;
+    if (cfg.clockPlacement === 'free') {
+      var clockRect = clockEl.getBoundingClientRect();
+      var canvasRect = wrap.getBoundingClientRect();
+      isUpper = clockRect.top + clockRect.height / 2 < canvasRect.top + canvasRect.height / 2;
+      isRight = clockRect.left + clockRect.width / 2 >= canvasRect.left + canvasRect.width / 2;
+    } else {
+      var position = getClockDisplayPosition();
+      isUpper = position.indexOf('top') === 0;
+      isRight = position.indexOf('right') >= 0;
+    }
+
+    return isUpper && isRight ? 'top-left' : 'top-right';
   }
   function updateAutoFullscreenCountdown() {
     var countdown = $('auto-fullscreen-countdown');
@@ -1425,9 +1488,18 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') {
       last = 0;
+      fpsT = 0;
+      fpsN = 0;
+      measuredFps = null;
+      updatePerformanceDisplay();
       lastActivity = Date.now();
       if (isFullscreen) lockWake();
       updateAutoFullscreenCountdown();
+    } else {
+      fpsT = 0;
+      fpsN = 0;
+      measuredFps = 0;
+      updatePerformanceDisplay();
     }
   });
   ['pointermove', 'pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (eventName) {

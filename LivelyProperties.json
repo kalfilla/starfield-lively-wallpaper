@@ -4,7 +4,7 @@
     "value": "Flight"
   },
   "starCount": {
-    "max": 1600,
+    "max": 10000,
     "min": 100,
     "step": 50,
     "text": "Star count",

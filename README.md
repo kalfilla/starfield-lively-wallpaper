@@ -28,6 +28,7 @@ star color and color mode, steering, auto-drift direction and speed, comets,
 twinkle, clock options, fullscreen behavior, information display, and auto
 quality. Lively calls `livelyPropertyListener(name, value)` when a control
 changes; the wallpaper applies the setting immediately.
+The star-count slider ranges up to 5,000.
 
 When the clock overlay is enabled, its options include seconds, size, alignment,
 and a position mode. **Free position** uses the horizontal and vertical sliders;
@@ -56,7 +57,10 @@ notice. An optional `auto fullscreen in Ns` countdown appears inside the canvas;
 shared links use `af=1` to enable auto fullscreen, `afd` for the delay in
 seconds, and `afc=1` to show the countdown. **Show information** displays the
 idle duration, remaining auto-fullscreen or automatic-clock time, and FPS/star
-count information.
+count information. FPS is measured from completed animation frames; the star
+count shows the number of star centers inside the viewport against the
+configured total. The panel uses the upper corner opposite an upper clock, or
+the upper-right when the clock is below.
 The interface uses the locally bundled Source Code Pro font, and the standalone
 settings page has a compact Allerta Stencil `STARFIELD` banner with green/cyan
 shadow layers, randomized letter glitches, and jitter; the underscore cursor
