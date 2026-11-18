@@ -1,19 +1,19 @@
 # Starfield Wallpaper
 
-This folder contains a browser wallpaper prepared for Lively Wallpaper. Lively
-properties provide saved controls for the starfield without showing the
-website's sidebar on the desktop.
+This project builds an optimized browser wallpaper for Lively Wallpaper and
+Wallpaper Engine. Lively properties provide saved controls for the starfield
+without showing the website's sidebar on the desktop.
 
-`LivelyInfo.json` contains the wallpaper title, author, description, version,
+`_LivelyInfo.json` contains the wallpaper title, author, description, version,
 and references to its thumbnail and animated preview. Increment its integer
 `Version` for each wallpaper change you package or publish.
 
 ## Install in Lively Wallpaper
 
-1. Keep the project files together: `index.html`, `LivelyProperties.json`,
-   `LivelyInfo.json`, `thumbnail.jpg`, `preview.gif`, and the `files` folder.
-2. Open Lively Wallpaper and use **Add Wallpaper** to browse to this folder's
-   `index.html`. You can also drag `index.html` into the Lively window.
+1. Run `npm install` once, then run `npm run build` whenever you update the
+   wallpaper. This creates the optimized `dist` folder.
+2. In Lively Wallpaper, use **Add Wallpaper** to browse to `dist/index.html`.
+   You can also drag that file into the Lively window.
 3. Assign the wallpaper to the desired display.
 4. Right-click its tile in the Lively library and choose **Customize**.
    Lively's settings include sliders and toggles for the starfield.
@@ -25,9 +25,10 @@ Default** option in the customization panel to reload the supplied defaults.
 
 The Lively controls cover star count, speed, warp, star size, glow, trail, roll,
 star color and color mode, steering, auto-drift direction and speed, comets,
-twinkle, clock options, fullscreen behavior, information display, and auto
-quality. Lively calls `livelyPropertyListener(name, value)` when a control
-changes; the wallpaper applies the setting immediately.
+twinkle, clock options, fullscreen behavior, information display, performance
+counter visibility, and auto quality. Lively calls
+`livelyPropertyListener(name, value)` when a control changes; the wallpaper
+applies the setting immediately.
 The star-count slider ranges up to 5,000.
 
 When the clock overlay is enabled, its options include seconds, size, alignment,
@@ -60,7 +61,8 @@ idle duration, remaining auto-fullscreen or automatic-clock time, and FPS/star
 count information. FPS is measured from completed animation frames; the star
 count shows the number of star centers inside the viewport against the
 configured total. The panel uses the upper corner opposite an upper clock, or
-the upper-right when the clock is below.
+the upper-right when the clock is below. The Performance options can hide the
+FPS and star counter without disabling auto quality.
 The interface uses the locally bundled Source Code Pro font, and the standalone
 settings page has a compact Allerta Stencil `STARFIELD` banner with green/cyan
 shadow layers, randomized letter glitches, and jitter; the underscore cursor
@@ -86,11 +88,16 @@ Lively itself manages the desktop-sized surface. The **Start standalone page in
 fullscreen** property is for the browser page's shareable `fs` setting; it
 doesn't request a second fullscreen window from Lively.
 
+## Code style
+
+Run `npm install` to install the development tools. Use `npm run format` to
+format the JavaScript, `npm run lint` to check block and brace style, or
+`npm run check` to run both checks.
+
 ## Wallpaper Engine
 
-Run `.\export-wallpaper-engine.cmd` to create a clean `WallpaperEngineExport`
-folder containing the wallpaper entry point, its settings file, and required
-local assets. In the Wallpaper Engine editor, drag
+Run `.\export-wallpaper-engine.cmd` to build the optimized files and copy them
+from `dist` into `WallpaperEngineExport`. In the Wallpaper Engine editor, drag
 `WallpaperEngineExport\wallpaper-engine.html` onto **Create Wallpaper**. This
 entry point opens the full-screen wallpaper without the settings sidebar. The
 editor creates the Wallpaper Engine `project.json` when it imports the HTML

@@ -2,7 +2,9 @@
   'use strict';
 
   var wallpaperEngineMode = new URLSearchParams(location.search).get('wallpaperEngine') === '1';
-  if (wallpaperEngineMode) document.body.classList.add('wallpaper-engine');
+  if (wallpaperEngineMode) {
+    document.body.classList.add('wallpaper-engine');
+  }
 
   // Keep embedded defaults in sync with LivelyProperties.json; they are used when its fetch fails.
   var livelyProperties;
@@ -46,6 +48,7 @@
       autoFullscreen: { value: false },
       autoFullscreenDelay: { min: 0, max: 120, step: 1, value: 30 },
       autoFullscreenCountdown: { value: false },
+      showPerformanceStats: { value: true },
       autoQuality: { value: true },
       startStandaloneFullscreen: { value: false },
     };
@@ -84,7 +87,9 @@
   // Pre-build color lookup tables so star rendering doesn't calculate colors every frame.
   var REAL = [];
   REAL_W.forEach(function (p) {
-    for (var i = 0; i < p[1]; i++) REAL.push(p[0]);
+    for (var i = 0; i < p[1]; i++) {
+      REAL.push(p[0]);
+    }
   });
   var DEPTH = [];
   (function () {
@@ -100,12 +105,12 @@
         k = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
       DEPTH.push(
         'rgb(' +
-        Math.round(a[1][0] + (b[1][0] - a[1][0]) * k) +
-        ',' +
-        Math.round(a[1][1] + (b[1][1] - a[1][1]) * k) +
-        ',' +
-        Math.round(a[1][2] + (b[1][2] - a[1][2]) * k) +
-        ')',
+          Math.round(a[1][0] + (b[1][0] - a[1][0]) * k) +
+          ',' +
+          Math.round(a[1][1] + (b[1][1] - a[1][1]) * k) +
+          ',' +
+          Math.round(a[1][2] + (b[1][2] - a[1][2]) * k) +
+          ')',
       );
     }
   })();
@@ -174,7 +179,12 @@
       lively: 'colorMode',
       values: ['fixed', 'rainbow', 'real', 'depth'],
     },
-    steer: { type: 'enum', query: 'st', lively: 'steering', values: ['off', 'pointer', 'auto'] },
+    steer: {
+      type: 'enum',
+      query: 'st',
+      lively: 'steering',
+      values: ['off', 'pointer', 'auto'],
+    },
     nebula: {
       type: 'boolean',
       query: 'nb',
@@ -183,9 +193,24 @@
       defaultValue: false,
       share: false,
     },
-    comets: { type: 'boolean', query: 'co', lively: 'comets', control: 'o-comets' },
-    twinkle: { type: 'boolean', query: 'tw', lively: 'twinklingStars', control: 'o-twinkle' },
-    clock: { type: 'boolean', query: 'cl', lively: 'clockOverlay', control: 'o-clock' },
+    comets: {
+      type: 'boolean',
+      query: 'co',
+      lively: 'comets',
+      control: 'o-comets',
+    },
+    twinkle: {
+      type: 'boolean',
+      query: 'tw',
+      lively: 'twinklingStars',
+      control: 'o-twinkle',
+    },
+    clock: {
+      type: 'boolean',
+      query: 'cl',
+      lively: 'clockOverlay',
+      control: 'o-clock',
+    },
     clockSeconds: {
       type: 'boolean',
       query: 'cs',
@@ -292,6 +317,12 @@
       lively: 'showInformation',
       control: 'o-info',
     },
+    showPerformanceStats: {
+      type: 'boolean',
+      query: 'ps',
+      lively: 'showPerformanceStats',
+      control: 'o-show-performance',
+    },
     autoFullscreen: {
       type: 'boolean',
       query: 'af',
@@ -312,7 +343,12 @@
       lively: 'autoFullscreenCountdown',
       control: 'o-auto-fullscreen-countdown',
     },
-    auto: { type: 'boolean', query: 'aq', lively: 'autoQuality', control: 'o-auto' },
+    auto: {
+      type: 'boolean',
+      query: 'aq',
+      lively: 'autoQuality',
+      control: 'o-auto',
+    },
     fullscreen: {
       type: 'boolean',
       query: 'fs',
@@ -361,7 +397,10 @@
         }
         BASE[key] = setting.values[property.value];
       } else if (setting.type === 'boolean') {
-        if ((!usingFallback && property.type !== 'checkbox') || typeof property.value !== 'boolean') {
+        if (
+          (!usingFallback && property.type !== 'checkbox') ||
+          typeof property.value !== 'boolean'
+        ) {
           throw new Error('Invalid checkbox definition for "' + setting.lively + '".');
         }
         BASE[key] = property.value;
@@ -385,7 +424,9 @@
 
   var LIM = {};
   Object.keys(SETTINGS).forEach(function (key) {
-    if (SETTINGS[key].range) LIM[key] = SETTINGS[key].range;
+    if (SETTINGS[key].range) {
+      LIM[key] = SETTINGS[key].range;
+    }
   });
   var SLIDERS = Object.keys(SETTINGS).filter(function (key) {
     return SETTINGS[key].type === 'number';
@@ -395,7 +436,9 @@
   });
   var LIVELY_SETTING_KEYS = Object.create(null);
   Object.keys(SETTINGS).forEach(function (key) {
-    if (SETTINGS[key].lively) LIVELY_SETTING_KEYS[SETTINGS[key].lively] = key;
+    if (SETTINGS[key].lively) {
+      LIVELY_SETTING_KEYS[SETTINGS[key].lively] = key;
+    }
   });
   var LIVELY_LABELS = Object.create(null);
   LIVELY_LABELS.flightSettings = true;
@@ -438,7 +481,7 @@
     gAng = 0,
     qScale = 1,
     lowSecs = 0,
-    last = 0,
+    lastFrameTime = 0,
     visibleStarCount = null;
   var ptr = {
     x: 0,
@@ -487,7 +530,9 @@
     PC[i] = (Math.random() * 256) | 0;
   }
   function rebuild() {
-    for (var i = 0; i < MAXN; i++) spawn(i, true);
+    for (var i = 0; i < MAXN; i++) {
+      spawn(i, true);
+    }
   }
 
   /* ── canvas size ─────────────────────────────────────────── */
@@ -498,7 +543,9 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     res = cfg.style === 'retro' ? 0.5 : dpr;
     // Reduce resolution on very large displays to keep the canvas responsive.
-    while (W * H * res * res > 5.5e6) res *= 0.85;
+    while (W * H * res * res > 5.5e6) {
+      res *= 0.85;
+    }
     var cw = Math.round(W * res),
       ch = Math.round(H * res);
     if (canvas.width !== cw || canvas.height !== ch) {
@@ -551,8 +598,9 @@
       g.fillStyle = gr;
       g.fillRect(x - r, y - r, r * 2, r * 2);
     }
-    for (var i = 0; i < 18; i++)
+    for (var i = 0; i < 18; i++) {
       blob(rnd() * S, rnd() * S, 160 + rnd() * 260, pal[i % pal.length], 0.1 + rnd() * 0.12);
+    }
     for (i = 0; i < 260; i++) {
       var cx0 = rnd() * S,
         cy0 = rnd() * S;
@@ -570,7 +618,8 @@
       nebCv = makeNebula(nebKind);
       try {
         nebEl.style.backgroundImage = 'url(' + nebCv.toDataURL('image/jpeg', 0.94) + ')';
-      } catch (e) {
+      } catch (error) {
+        console.warn('Unable to render the nebula background image.', error);
         nebEl.style.backgroundColor = '#101030';
       }
     }
@@ -688,19 +737,27 @@
       var verticalTime = t * cfg.driftSpeed * cfg.driftVerticalSpeed;
       tx = Math.sin(horizontalTime * 0.13) * 0.6 + Math.sin(horizontalTime * 0.047 + 1) * 0.35;
       ty = Math.cos(verticalTime * 0.09) * 0.4 + Math.sin(verticalTime * 0.061) * 0.25;
-      if (cfg.driftDirection === 'left') tx = -Math.abs(tx);
-      else if (cfg.driftDirection === 'right') tx = Math.abs(tx);
-      else if (cfg.driftDirection === 'up') ty = -Math.abs(ty);
-      else if (cfg.driftDirection === 'down') ty = Math.abs(ty);
-      else if (cfg.driftDirection === 'clockwise' || cfg.driftDirection === 'counterclockwise') {
+      if (cfg.driftDirection === 'left') {
+        tx = -Math.abs(tx);
+      } else if (cfg.driftDirection === 'right') {
+        tx = Math.abs(tx);
+      } else if (cfg.driftDirection === 'up') {
+        ty = -Math.abs(ty);
+      } else if (cfg.driftDirection === 'down') {
+        ty = Math.abs(ty);
+      } else if (cfg.driftDirection === 'clockwise' || cfg.driftDirection === 'counterclockwise') {
         var orbitPhase = t * cfg.driftSpeed * 0.13;
         tx = Math.sin(orbitPhase * cfg.driftHorizontalSpeed);
         ty =
           Math.cos(orbitPhase * cfg.driftVerticalSpeed) *
           (cfg.driftDirection === 'clockwise' ? -1 : 1);
       }
-      if (cfg.driftSpeed === 0 || cfg.driftHorizontalSpeed === 0) tx = 0;
-      if (cfg.driftSpeed === 0 || cfg.driftVerticalSpeed === 0) ty = 0;
+      if (cfg.driftSpeed === 0 || cfg.driftHorizontalSpeed === 0) {
+        tx = 0;
+      }
+      if (cfg.driftSpeed === 0 || cfg.driftVerticalSpeed === 0) {
+        ty = 0;
+      }
       tx *= cfg.driftStrength / 100;
       ty *= cfg.driftStrength / 100;
     }
@@ -750,16 +807,24 @@
       ctx.beginPath();
       ctx.arc(comet.x, comet.y, 1.8, 0, 6.2832);
       ctx.fill();
-      if (comet.x < -200 || comet.x > W + 200 || comet.y > H + 100 || comet.life > 8) comet = null;
+      if (comet.x < -200 || comet.x > W + 200 || comet.y > H + 100 || comet.life > 8) {
+        comet = null;
+      }
     }
   }
 
   /* ── main step ───────────────────────────────────────────── */
   function colorFor(i, depth) {
     var cm = cfg.cm;
-    if (cm === 'rainbow') return RAINBOW[PC[i] & 7];
-    if (cm === 'real') return REAL[PC[i] % REAL.length];
-    if (cm === 'depth') return DEPTH[Math.min(31, (depth * 32) | 0)];
+    if (cm === 'rainbow') {
+      return RAINBOW[PC[i] & 7];
+    }
+    if (cm === 'real') {
+      return REAL[PC[i] % REAL.length];
+    }
+    if (cm === 'depth') {
+      return DEPTH[Math.min(31, (depth * 32) | 0)];
+    }
     return cfg.color;
   }
   var RETRO_G = ['#4a4a4a', '#8a8a8a', '#c8c8c8', '#ffffff'];
@@ -767,7 +832,9 @@
     t += dt;
     var st = cfg.style,
       sc = { sp: 1, wp: 1, fl: 0, gl: 0, hud: '' };
-    if (st === 'warp') sc = warpScript(t);
+    if (st === 'warp') {
+      sc = warpScript(t);
+    }
     var hud = st === 'warp' ? sc.hud : '';
     if (hud !== lastHud) {
       hudEl.textContent = hud;
@@ -778,7 +845,7 @@
     // The projected center follows the selected steering direction.
     var ox = W / 2 + vx * W * 0.28,
       oy = H / 2 + vy * H * 0.28;
-    if (nebEl.classList.contains('on'))
+    if (nebEl.classList.contains('on')) {
       nebEl.style.transform =
         'translate(' +
         (-vx * 26).toFixed(1) +
@@ -787,6 +854,7 @@
         'px) rotate(' +
         (t * 0.35).toFixed(2) +
         'deg) scale(1.25)';
+    }
     var zRate = (cfg.speed * 0.096 + 0.06) * sc.sp,
       dz = zRate * dt;
     ringPh += dz;
@@ -794,7 +862,8 @@
     var maxR = cfg.size * 0.45,
       glow = cfg.glow,
       n = activeStarCount(),
-      visibleStars = 0;
+      shouldCountVisibleStars = cfg.showPerformanceStats,
+      onScreenStarCount = 0;
     var rollRate = cfg.roll * 0.07,
       retro = st === 'retro';
     // clear / fade
@@ -804,12 +873,16 @@
       ctx.globalCompositeOperation = 'destination-out';
       ctx.fillStyle = 'rgba(0,0,0,' + (1 - cfg.trail * 0.1).toFixed(2) + ')';
       ctx.fillRect(0, 0, W, H);
-    } else ctx.clearRect(0, 0, W, H);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+    }
     ctx.globalCompositeOperation = glow > 0 && !retro ? 'lighter' : 'source-over';
     ctx.lineCap = 'round';
     // backdrops
     if (st === 'galaxy') {
-      if (!galCv) galCv = makeGalaxy();
+      if (!galCv) {
+        galCv = makeGalaxy();
+      }
       gAng += dt * (0.02 + cfg.roll * 0.012);
       var gs = Math.min(W, H) * (1.55 + 0.08 * Math.sin(t * 0.07));
       ctx.save();
@@ -842,10 +915,16 @@
     if (st === 'wormhole') {
       for (var k = 0; k < 7; k++) {
         var zz = (k / 7 - ringPh * 0.22) % 1;
-        if (zz < 0) zz += 1;
-        if (zz < 0.04) continue;
+        if (zz < 0) {
+          zz += 1;
+        }
+        if (zz < 0.04) {
+          continue;
+        }
         var rr = ((F * Math.max(A, 1) * 0.95) / zz) * 0.55;
-        if (rr > 3 * Math.max(W, H)) continue;
+        if (rr > 3 * Math.max(W, H)) {
+          continue;
+        }
         var dep = 1 - zz;
         ctx.globalAlpha = 0.04 + 0.26 * dep;
         ctx.strokeStyle = '#b388ff';
@@ -892,7 +971,9 @@
         spawn(i, false);
         continue;
       }
-      if (sx >= 0 && sx < W && sy >= 0 && sy < H) visibleStars++;
+      if (shouldCountVisibleStars && sx >= 0 && sx < W && sy >= 0 && sy < H) {
+        onScreenStarCount++;
+      }
       var depth = 1 - z;
       if (retro) {
         var lv = depth < 0.35 ? 0 : depth < 0.6 ? 1 : depth < 0.82 ? 2 : 3,
@@ -904,7 +985,9 @@
       }
       var r = Math.max(0.4, depth * maxR),
         al = Math.min(1, 0.2 + depth * 1.05);
-      if (tw) al *= 0.72 + 0.28 * Math.sin(t * 3 + PH[i]);
+      if (tw) {
+        al *= 0.72 + 0.28 * Math.sin(t * 3 + PH[i]);
+      }
       var col = colorFor(i, depth);
       ctx.globalAlpha = al;
       ctx.strokeStyle = col;
@@ -939,7 +1022,9 @@
         }
       }
     }
-    visibleStarCount = visibleStars;
+    if (shouldCountVisibleStars) {
+      visibleStarCount = onScreenStarCount;
+    }
     ctx.globalAlpha = 1;
     if (comet || cfg.comets) {
       ctx.globalCompositeOperation = 'source-over';
@@ -948,52 +1033,77 @@
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  function frame(now) {
+  function frame(animationFrameTimestampMs) {
     requestAnimationFrame(frame);
-    var dtRaw = last ? (now - last) / 1000 : 0.016;
-    last = now;
-    if (!(dtRaw > 0)) dtRaw = 0.016;
-    if (paused) return;
-    step(Math.min(dtRaw, 0.05));
-    fpsTick(dtRaw);
+    var rawDeltaSeconds = lastFrameTime
+      ? (animationFrameTimestampMs - lastFrameTime) / 1000
+      : 0.016;
+    lastFrameTime = animationFrameTimestampMs;
+    if (!(rawDeltaSeconds > 0)) {
+      rawDeltaSeconds = 0.016;
+    }
+    if (paused) {
+      return;
+    }
+    step(Math.min(rawDeltaSeconds, 0.05));
+    if (cfg.showPerformanceStats || cfg.auto) {
+      updateFrameRate(rawDeltaSeconds);
+    }
   }
-  var fpsT = 0,
-    fpsN = 0,
-    measuredFps = null,
-    statEl = $('sf-stats');
+  var fpsSampleDurationSeconds = 0,
+    fpsSampleFrameCount = 0,
+    measuredFramesPerSecond = null,
+    performanceStatsElement = $('sf-stats');
+  function resetFrameRateSample() {
+    fpsSampleDurationSeconds = 0;
+    fpsSampleFrameCount = 0;
+    measuredFramesPerSecond = null;
+  }
   function updatePerformanceDisplay() {
-    var fpsLabel = 'Measuring FPS';
-    if (paused || document.visibilityState !== 'visible') fpsLabel = '0 fps';
-    else if (measuredFps !== null) fpsLabel = measuredFps.toFixed(1) + ' fps';
-    var starLabel =
+    if (!cfg.showPerformanceStats) {
+      return;
+    }
+    var framesPerSecondLabel = 'Measuring FPS';
+    if (paused || document.visibilityState !== 'visible') {
+      framesPerSecondLabel = '0 fps';
+    } else if (measuredFramesPerSecond !== null) {
+      framesPerSecondLabel = measuredFramesPerSecond.toFixed(1) + ' fps';
+    }
+    var starCountLabel =
       visibleStarCount === null
         ? cfg.count.toLocaleString() + ' stars'
-        : cfg.count.toLocaleString() + ' stars ('+ visibleStarCount.toLocaleString() + ')';
-    var text =
-      fpsLabel +
-      ' · ' +
-      starLabel +
-      (qScale < 1 ? ' (auto-reduced)' : '');
-    if (statEl) statEl.textContent = text;
-    $('sf-info-performance').textContent = text;
+        : cfg.count.toLocaleString() + ' stars (' + visibleStarCount.toLocaleString() + ')';
+    var performanceStatsText =
+      framesPerSecondLabel + ' · ' + starCountLabel + (qScale < 1 ? ' (auto-reduced)' : '');
+    if (performanceStatsElement) {
+      performanceStatsElement.textContent = performanceStatsText;
+    }
+    $('sf-info-performance').textContent = performanceStatsText;
   }
-  function fpsTick(d) {
-    fpsT += d;
-    fpsN++;
-    if (fpsT >= 1) {
-      measuredFps = fpsN / fpsT;
-      fpsT = 0;
-      fpsN = 0;
+  function updateFrameRate(deltaSeconds) {
+    fpsSampleDurationSeconds += deltaSeconds;
+    fpsSampleFrameCount++;
+    if (fpsSampleDurationSeconds >= 1) {
+      measuredFramesPerSecond = fpsSampleFrameCount / fpsSampleDurationSeconds;
+      fpsSampleDurationSeconds = 0;
+      fpsSampleFrameCount = 0;
       // Lower the star count only after several slow seconds, avoiding brief quality drops.
       if (cfg.auto && !paused && document.visibilityState === 'visible') {
-        if (measuredFps < 38) lowSecs++;
-        else lowSecs = 0;
+        if (measuredFramesPerSecond < 38) {
+          lowSecs++;
+        } else {
+          lowSecs = 0;
+        }
         if (lowSecs >= 3 && qScale > 0.36 && cfg.count * qScale > 160) {
           qScale = Math.max(0.35, qScale * 0.8);
           lowSecs = 0;
         }
-      } else lowSecs = 0;
-      updatePerformanceDisplay();
+      } else {
+        lowSecs = 0;
+      }
+      if (cfg.showPerformanceStats) {
+        updatePerformanceDisplay();
+      }
     }
   }
 
@@ -1004,8 +1114,12 @@
       var setting = SETTINGS[k];
       var el = $(setting.control);
       var v = $(setting.valueControl);
-      if (el) el.value = cfg[k] * (setting.inputScale || 1);
-      if (v) v.textContent = cfg[k] + (setting.unit || '');
+      if (el) {
+        el.value = cfg[k] * (setting.inputScale || 1);
+      }
+      if (v) {
+        v.textContent = cfg[k] + (setting.unit || '');
+      }
     });
     document.body.classList.toggle('hide-mouse', !!cfg.hideMouse);
     $('auto-drift-options').hidden = cfg.steer !== 'auto';
@@ -1032,8 +1146,14 @@
     $('o-steer').value = cfg.steer;
     BOOLEAN_SETTINGS.forEach(function (k) {
       var el = $(SETTINGS[k].control);
-      if (el) el.checked = !!cfg[k];
+      if (el) {
+        el.checked = !!cfg[k];
+      }
     });
+    if (performanceStatsElement) {
+      performanceStatsElement.hidden = !cfg.showPerformanceStats;
+    }
+    $('sf-info-performance').hidden = !cfg.showPerformanceStats;
     clockEl.classList.toggle('on', !!cfg.clock);
     updatePerformanceDisplay();
     $('auto-fullscreen-options').hidden = !cfg.autoFullscreen;
@@ -1041,7 +1161,9 @@
     $('fs-hint').textContent =
       cfg.steer === 'pointer' ? '⛶ click to fullscreen · move to steer' : '⛶ click to fullscreen';
     var cb = $('fs-clock');
-    if (cb) cb.classList.toggle('on', !!cfg.clock);
+    if (cb) {
+      cb.classList.toggle('on', !!cfg.clock);
+    }
 
     // Update slider tracks after syncing their values, including restored settings.
     document.querySelectorAll('input[type="range"]').forEach(function (range) {
@@ -1060,7 +1182,9 @@
     }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
-      if (livelyMode) return;
+      if (livelyMode) {
+        return;
+      }
       try {
         var sections = {};
         document.querySelectorAll('#sidebar .section[data-section]').forEach(function (section) {
@@ -1088,13 +1212,25 @@
       return;
     }
     cfg[k] = value;
-    if (k === 'clockPlacement' && value === 'auto') clockAutoPositionStarted = Date.now();
-    if (k === 'clockAutoPositionInterval' && cfg.clockPlacement === 'auto')
+    if (k === 'clockPlacement' && value === 'auto') {
       clockAutoPositionStarted = Date.now();
-    if (k === 'autoFullscreen' && !value) exitAutoFullscreen();
+    }
+    if (k === 'clockAutoPositionInterval' && cfg.clockPlacement === 'auto') {
+      clockAutoPositionStarted = Date.now();
+    }
+    if (k === 'autoFullscreen' && !value) {
+      exitAutoFullscreen();
+    }
     if (k === 'count') {
       qScale = 1;
       visibleStarCount = null;
+    }
+    if (k === 'showPerformanceStats' || k === 'auto') {
+      resetFrameRateSample();
+      lowSecs = 0;
+      if (k === 'showPerformanceStats') {
+        visibleStarCount = null;
+      }
     }
     afterChange(false);
   }
@@ -1115,7 +1251,9 @@
     flashEl.style.opacity = '0';
     fullRebuild();
     afterChange(false);
-    if (paused) setPaused(false);
+    if (paused) {
+      setPaused(false);
+    }
   }
 
   // The settings registry is the source of truth for all slider markup values.
@@ -1203,10 +1341,8 @@
 
   function setPaused(v) {
     paused = v;
-    last = 0;
-    fpsT = 0;
-    fpsN = 0;
-    measuredFps = null;
+    lastFrameTime = 0;
+    resetFrameRateSample();
     updatePerformanceDisplay();
     var lab = paused
       ? '<span class="ab-icon">▶</span> Resume'
@@ -1228,13 +1364,17 @@
     ptr.active = false;
   });
   wrap.addEventListener('pointerup', function (e) {
-    if (e.pointerType === 'touch') ptr.active = false;
+    if (e.pointerType === 'touch') {
+      ptr.active = false;
+    }
   });
   var fsT = 0;
   wrap.addEventListener(
     'touchstart',
     function () {
-      if (!isFullscreen) return;
+      if (!isFullscreen) {
+        return;
+      }
       var c = $('fs-controls');
       c.classList.add('visible');
       clearTimeout(fsT);
@@ -1246,33 +1386,50 @@
   );
 
   /* ── fullscreen ──────────────────────────────────────────── */
-  var wl = null;
-  function lockWake() {
+  var screenWakeLock = null;
+  function requestScreenWakeLock() {
     try {
-      if ('wakeLock' in navigator && !wl)
+      if ('wakeLock' in navigator && !screenWakeLock) {
         navigator.wakeLock
           .request('screen')
-          .then(function (l) {
-            wl = l;
-            l.addEventListener('release', function () {
-              wl = null;
+          .then(function (wakeLock) {
+            screenWakeLock = wakeLock;
+            wakeLock.addEventListener('release', function () {
+              screenWakeLock = null;
             });
           })
-          .catch(function () { });
-    } catch (e) { }
+          .catch(function (error) {
+            console.warn('Unable to request a screen wake lock.', error);
+          });
+      }
+    } catch (error) {
+      console.warn('Unable to request a screen wake lock.', error);
+    }
   }
-  function unlockWake() {
+  function releaseScreenWakeLock() {
     try {
-      if (wl) wl.release();
-    } catch (e) { }
-    wl = null;
+      if (screenWakeLock) {
+        screenWakeLock.release().catch(function (error) {
+          console.warn('Unable to release a screen wake lock.', error);
+        });
+      }
+    } catch (error) {
+      console.warn('Unable to release a screen wake lock.', error);
+    }
+    screenWakeLock = null;
   }
   function enterFullscreen(automatic) {
     // Lively already owns the full-screen desktop surface.
-    if (livelyMode || isFullscreen) return;
+    if (livelyMode || isFullscreen) {
+      return;
+    }
     try {
-      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    } catch (e) { }
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+    } catch (error) {
+      console.warn('Unable to blur the active element before fullscreen.', error);
+    }
     var el = document.documentElement,
       req =
         el.requestFullscreen ||
@@ -1280,59 +1437,68 @@
         el.mozRequestFullScreen ||
         el.msRequestFullscreen;
     function useViewportFullscreen() {
-      if (automatic && !autoFullscreenCancelled)
+      if (automatic && !autoFullscreenCancelled) {
         toast('Browser blocked fullscreen; using viewport mode');
+      }
       pseudoEnter();
     }
     if (req) {
       try {
         var r = req.call(el);
-        if (r && r.catch) r.catch(useViewportFullscreen);
-      } catch (e) {
+        if (r && r.catch) {
+          r.catch(useViewportFullscreen);
+        }
+      } catch (error) {
+        console.warn('Unable to enter native fullscreen; switching to viewport mode.', error);
         useViewportFullscreen();
       }
-    } else useViewportFullscreen();
+    } else {
+      useViewportFullscreen();
+    }
   }
   function pseudoEnter() {
     pseudoFs = true;
     onFsChange();
   }
   function exitFullscreen() {
-    if (document.fullscreenElement || document.webkitFullscreenElement)
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
       (
         document.exitFullscreen ||
         document.webkitExitFullscreen ||
         document.mozCancelFullScreen ||
         document.msExitFullscreen
       ).call(document);
-    else {
+    } else {
       pseudoFs = false;
       onFsChange();
     }
   }
   function exitAutoFullscreen() {
-    if (!autoFullscreenLaunched) return;
+    if (!autoFullscreenLaunched) {
+      return;
+    }
     autoFullscreenLaunched = false;
-    if (isFullscreen) exitFullscreen();
-    else autoFullscreenCancelled = true;
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      autoFullscreenCancelled = true;
+    }
   }
   function isFullscreenShortcut(event) {
-    if (event.type !== 'keydown') return false;
+    if (event.type !== 'keydown') {
+      return false;
+    }
     var tag = event.target && event.target.tagName;
-    if (
-      event.ctrlKey ||
-      event.metaKey ||
-      event.altKey ||
-      tag === 'SELECT' ||
-      tag === 'TEXTAREA'
-    ) {
+    if (event.ctrlKey || event.metaKey || event.altKey || tag === 'SELECT' || tag === 'TEXTAREA') {
       return false;
     }
     return event.key === 'Escape' || (event.key.length === 1 && event.key.toLowerCase() === 'f');
   }
   function handleActivity(event) {
     lastActivity = Date.now();
-    if (autoFullscreenLaunched && !isFullscreenShortcut(event)) exitAutoFullscreen();
+    if (autoFullscreenLaunched && !isFullscreenShortcut(event)) {
+      exitAutoFullscreen();
+    }
     updateAutoFullscreenCountdown();
   }
   function formatDuration(seconds) {
@@ -1344,7 +1510,9 @@
   function updateInformation(now) {
     var info = $('sf-info');
     info.hidden = !cfg.showInformation;
-    if (!cfg.showInformation) return;
+    if (!cfg.showInformation) {
+      return;
+    }
     updateInformationPosition(info);
 
     $('sf-info-idle').textContent = formatDuration((now - lastActivity) / 1000);
@@ -1394,7 +1562,9 @@
     }
   }
   function getInformationPosition() {
-    if (!cfg.clock || !clockEl.classList.contains('on')) return 'top-right';
+    if (!cfg.clock || !clockEl.classList.contains('on')) {
+      return 'top-right';
+    }
 
     var isUpper;
     var isRight;
@@ -1471,12 +1641,15 @@
     }
     wrap.classList.toggle('fullscreen-active', isFullscreen);
     document.body.classList.toggle('in-fullscreen', isFullscreen);
-    if (isFullscreen) wrap.removeAttribute('title');
-    else wrap.setAttribute('title', 'Click to enter fullscreen');
-    if (!isFullscreen) {
-      unlockWake();
+    if (isFullscreen) {
+      wrap.removeAttribute('title');
     } else {
-      lockWake();
+      wrap.setAttribute('title', 'Click to enter fullscreen');
+    }
+    if (!isFullscreen) {
+      releaseScreenWakeLock();
+    } else {
+      requestScreenWakeLock();
     }
     updateAutoFullscreenCountdown();
     requestAnimationFrame(function () {
@@ -1487,18 +1660,16 @@
   }
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') {
-      last = 0;
-      fpsT = 0;
-      fpsN = 0;
-      measuredFps = null;
+      lastFrameTime = 0;
+      resetFrameRateSample();
       updatePerformanceDisplay();
       lastActivity = Date.now();
-      if (isFullscreen) lockWake();
+      if (isFullscreen) {
+        requestScreenWakeLock();
+      }
       updateAutoFullscreenCountdown();
     } else {
-      fpsT = 0;
-      fpsN = 0;
-      measuredFps = 0;
+      resetFrameRateSample();
       updatePerformanceDisplay();
     }
   });
@@ -1506,12 +1677,15 @@
     document.addEventListener(eventName, handleActivity, { passive: true });
   });
   setInterval(checkAutoFullscreen, 250);
-  if (window.ResizeObserver)
+  if (window.ResizeObserver) {
     new ResizeObserver(function () {
       var oa = A;
       sizeCanvas();
-      if (Math.abs(A - oa) / oa > 0.12) rebuild();
+      if (Math.abs(A - oa) / oa > 0.12) {
+        rebuild();
+      }
     }).observe(wrap);
+  }
   window.addEventListener('resize', function () {
     sizeCanvas();
   });
@@ -1519,23 +1693,31 @@
   /* ── clock ───────────────────────────────────────────────── */
   var AUTO_CLOCK_POSITIONS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
   function getClockDisplayPosition() {
-    if (cfg.clockPlacement !== 'auto') return cfg.clockPlacement;
+    if (cfg.clockPlacement !== 'auto') {
+      return cfg.clockPlacement;
+    }
     var interval = cfg.clockAutoPositionInterval * 60 * 1000;
     var positionIndex = Math.floor((Date.now() - clockAutoPositionStarted) / interval);
     return AUTO_CLOCK_POSITIONS[positionIndex % AUTO_CLOCK_POSITIONS.length];
   }
   function getClockAlignment() {
-    if (cfg.clockPlacement === 'free') return cfg.clockAlignment;
+    if (cfg.clockPlacement === 'free') {
+      return cfg.clockAlignment;
+    }
     return getClockDisplayPosition().indexOf('right') >= 0 ? 'right' : 'left';
   }
   function updateClock() {
     clockEl.dataset.position = getClockDisplayPosition();
     clockEl.style.textAlign = getClockAlignment();
-    if (!cfg.clock) return;
+    if (!cfg.clock) {
+      return;
+    }
     var d = new Date();
     // Seconds are optional; the same locale formatting is used in the page and fullscreen.
     var timeOptions = { hour: '2-digit', minute: '2-digit' };
-    if (cfg.clockSeconds) timeOptions.second = '2-digit';
+    if (cfg.clockSeconds) {
+      timeOptions.second = '2-digit';
+    }
     clockEl.querySelector('.t').textContent = d.toLocaleTimeString([], timeOptions);
     clockEl.querySelector('.d').textContent = d.toLocaleDateString([], {
       weekday: 'long',
@@ -1592,10 +1774,15 @@
     var q = new URLSearchParams();
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
-      if (setting.share === false) return;
+      if (setting.share === false) {
+        return;
+      }
       var value = cfg[key];
-      if (setting.type === 'boolean') value = value ? 1 : 0;
-      else if (setting.type === 'color') value = value.replace('#', '');
+      if (setting.type === 'boolean') {
+        value = value ? 1 : 0;
+      } else if (setting.type === 'color') {
+        value = value.replace('#', '');
+      }
       q.set(setting.query, value);
     });
     return q.toString();
@@ -1610,7 +1797,7 @@
         history.replaceState(null, '', '?' + buildQuery());
         toast('Link is in the address bar');
       });
-    } catch (e) {
+    } catch {
       history.replaceState(null, '', '?' + buildQuery());
       toast('Link is in the address bar');
     }
@@ -1620,26 +1807,35 @@
     var hasSettings = false;
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
-      if (!q.has(setting.query)) return;
+      if (!q.has(setting.query)) {
+        return;
+      }
       hasSettings = true;
       var value = settingFromQuery(key, q.get(setting.query));
-      if (value !== null) cfg[key] = value;
+      if (value !== null) {
+        cfg[key] = value;
+      }
     });
     return hasSettings;
   }
 
   function normalizeSetting(key, value) {
     var setting = SETTINGS[key];
-    if (!setting) return null;
+    if (!setting) {
+      return null;
+    }
 
     if (setting.type === 'number') {
       if (
         (typeof value !== 'number' && typeof value !== 'string') ||
         (typeof value === 'string' && value.trim() === '')
-      )
+      ) {
         return null;
+      }
       var number = Number(value);
-      if (!isFinite(number)) return null;
+      if (!isFinite(number)) {
+        return null;
+      }
       var min = setting.range[0];
       var max = setting.range[1];
       number = clamp(number, min, max);
@@ -1650,24 +1846,34 @@
       );
       return Number(number.toFixed(precision));
     }
-    if (setting.type === 'boolean') return typeof value === 'boolean' ? value : null;
-    if (setting.type === 'color')
+    if (setting.type === 'boolean') {
+      return typeof value === 'boolean' ? value : null;
+    }
+    if (setting.type === 'color') {
       return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
         ? value.toLowerCase()
         : null;
-    if (setting.type === 'enum')
+    }
+    if (setting.type === 'enum') {
       return setting.values.indexOf(value) >= 0 ? value : null;
+    }
     return null;
   }
 
   function settingFromQuery(key, value) {
     var setting = SETTINGS[key];
     if (setting.type === 'boolean') {
-      if (value === '1') return true;
-      if (value === '0') return false;
+      if (value === '1') {
+        return true;
+      }
+      if (value === '0') {
+        return false;
+      }
       return null;
     }
-    if (setting.type === 'color' && value.charAt(0) !== '#') value = '#' + value;
+    if (setting.type === 'color' && value.charAt(0) !== '#') {
+      value = '#' + value;
+    }
     return normalizeSetting(key, value);
   }
 
@@ -1676,12 +1882,22 @@
     setKey(k, clamp(cfg[k] + d, LIM[k][0], LIM[k][1]));
   }
   document.addEventListener('keydown', function (e) {
-    if (livelyMode) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (livelyMode) {
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) {
+      return;
+    }
     var tag = e.target && e.target.tagName;
-    if (tag === 'SELECT' || tag === 'TEXTAREA') return;
-    if (tag === 'INPUT' && e.target.type === 'range' && e.key.indexOf('Arrow') === 0) return;
-    if (e.key === ' ' && (tag === 'BUTTON' || tag === 'INPUT' || tag === 'A')) return;
+    if (tag === 'SELECT' || tag === 'TEXTAREA') {
+      return;
+    }
+    if (tag === 'INPUT' && e.target.type === 'range' && e.key.indexOf('Arrow') === 0) {
+      return;
+    }
+    if (e.key === ' ' && (tag === 'BUTTON' || tag === 'INPUT' || tag === 'A')) {
+      return;
+    }
     var key = e.key,
       lk = key.length === 1 ? key.toLowerCase() : key;
     if (lk === 'f') {
@@ -1701,12 +1917,17 @@
     } else if (key === 'ArrowLeft') {
       e.preventDefault();
       bump('roll', -1);
-    } else if (lk === 'r') resetDefaults();
-    else if (lk === 'c') setKey('clock', !cfg.clock);
-    else if (lk === 'm')
+    } else if (lk === 'r') {
+      resetDefaults();
+    } else if (lk === 'c') {
+      setKey('clock', !cfg.clock);
+    } else if (lk === 'm') {
       setKey('steer', cfg.steer === 'off' ? 'pointer' : cfg.steer === 'pointer' ? 'auto' : 'off');
-    else if (lk === 'p') savePNG();
-    else if (key === 'Escape' && isFullscreen) exitFullscreen();
+    } else if (lk === 'p') {
+      savePNG();
+    } else if (key === 'Escape' && isFullscreen) {
+      exitFullscreen();
+    }
   });
 
   // Lively reads LivelyProperties.json and calls this function for each setting.
@@ -1717,7 +1938,9 @@
     }
     document.body.classList.add('lively-wallpaper');
 
-    if (Object.prototype.hasOwnProperty.call(LIVELY_LABELS, name)) return;
+    if (Object.prototype.hasOwnProperty.call(LIVELY_LABELS, name)) {
+      return;
+    }
 
     var key = LIVELY_SETTING_KEYS[name];
     if (!key) {
@@ -1748,7 +1971,9 @@
     }
 
     // Selecting a custom color switches the renderer to fixed-color mode.
-    if (key === 'color') setKey('cm', 'fixed');
+    if (key === 'color') {
+      setKey('cm', 'fixed');
+    }
     setKey(key, value);
   };
 
@@ -1766,9 +1991,13 @@
     if (!fromUrl) {
       if (saved && saved.cfg && typeof saved.cfg === 'object') {
         Object.keys(SETTINGS).forEach(function (key) {
-          if (!(key in saved.cfg)) return;
+          if (!(key in saved.cfg)) {
+            return;
+          }
           var value = normalizeSetting(key, saved.cfg[key]);
-          if (value !== null) cfg[key] = value;
+          if (value !== null) {
+            cfg[key] = value;
+          }
         });
       } else if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
         cfg.count = 220;
@@ -1784,13 +2013,17 @@
         cfg.comets = false;
         cfg.twinkle = false;
         var note = $('rm-note');
-        if (note) note.hidden = false;
+        if (note) {
+          note.hidden = false;
+        }
       }
     }
     if (saved && saved.sections && typeof saved.sections === 'object') {
       document.querySelectorAll('#sidebar .section[data-section]').forEach(function (section) {
         var savedState = saved.sections[section.dataset.section];
-        if (typeof savedState === 'boolean') section.open = savedState;
+        if (typeof savedState === 'boolean') {
+          section.open = savedState;
+        }
       });
     }
     document.querySelectorAll('#sidebar .section[data-section]').forEach(function (section) {
@@ -1799,7 +2032,9 @@
     var fullscreenOption = new URLSearchParams(location.search).get(SETTINGS.fullscreen.query);
     if (fullscreenOption !== null) {
       var fullscreenValue = settingFromQuery('fullscreen', fullscreenOption);
-      if (fullscreenValue !== null) cfg.fullscreen = fullscreenValue;
+      if (fullscreenValue !== null) {
+        cfg.fullscreen = fullscreenValue;
+      }
     }
     // Only an explicit fs=1 URL option should request fullscreen on page load.
     var startFullscreen = fullscreenOption === '1';
@@ -1808,7 +2043,9 @@
     updateClock();
     syncUI();
     requestAnimationFrame(frame);
-    if (startFullscreen) setTimeout(enterFullscreen, 0);
+    if (startFullscreen) {
+      setTimeout(enterFullscreen, 0);
+    }
   })();
 
   window.__sf = {
@@ -1818,7 +2055,9 @@
     step: step,
     sim: function (sec) {
       var n = Math.round(sec * 60);
-      for (var i = 0; i < n; i++) step(1 / 60);
+      for (var i = 0; i < n; i++) {
+        step(1 / 60);
+      }
     },
     buildQuery: buildQuery,
     get vp() {
@@ -1835,21 +2074,32 @@
     },
   };
 })();
-
 (function () {
   var b = document.body;
   function clr() {
-    if (!b.classList.contains('in-fullscreen')) return;
+    if (!b.classList.contains('in-fullscreen')) {
+      return;
+    }
     var controls = document.getElementById('fs-controls');
     var message = document.getElementById('fs-message');
-    if (controls) controls.classList.remove('visible');
-    if (message) message.classList.remove('visible');
+    if (controls) {
+      controls.classList.remove('visible');
+    }
+    if (message) {
+      message.classList.remove('visible');
+    }
   }
   var T;
   document.addEventListener('mousemove', function () {
-    if (!b.classList.contains('in-fullscreen')) return;
-    var target = document.getElementById(b.classList.contains('hide-mouse') ? 'fs-message' : 'fs-controls');
-    if (!target) return;
+    if (!b.classList.contains('in-fullscreen')) {
+      return;
+    }
+    var target = document.getElementById(
+      b.classList.contains('hide-mouse') ? 'fs-message' : 'fs-controls',
+    );
+    if (!target) {
+      return;
+    }
     target.classList.add('visible');
     clearTimeout(T);
     T = setTimeout(clr, 2500);

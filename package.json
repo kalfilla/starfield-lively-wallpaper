@@ -1,0 +1,19 @@
+{
+  "name": "starfield-wallpaper",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "check": "npm run format:check && npm run lint",
+    "format": "prettier --write files/starfield.js scripts/build.js eslint.config.js",
+    "format:check": "prettier --check files/starfield.js scripts/build.js eslint.config.js",
+    "lint": "eslint files/starfield.js scripts/build.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "esbuild": "^0.28.2",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "html-minifier-terser": "^7.2.0",
+    "prettier": "3.6.2"
+  }
+}

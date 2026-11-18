@@ -266,6 +266,11 @@
     "type": "label",
     "value": "Performance"
   },
+  "showPerformanceStats": {
+    "text": "Show FPS and star counter",
+    "type": "checkbox",
+    "value": true
+  },
   "autoQuality": {
     "text": "Auto quality",
     "type": "checkbox",

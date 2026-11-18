@@ -1,16 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#070d0c"/>
-  <g fill="none" stroke="#00ff88" stroke-linecap="round" stroke-width="2">
-    <path d="M30 31 8 18M30 31 7 31M30 31 11 48M34 30 55 14M34 30 58 33M34 30 51 51"/>
-  </g>
-  <g fill="#00d4ff">
-    <circle cx="7" cy="18" r="2"/>
-    <circle cx="6" cy="31" r="1.5"/>
-    <circle cx="10" cy="49" r="1.5"/>
-    <circle cx="56" cy="13" r="2"/>
-    <circle cx="59" cy="34" r="1.5"/>
-    <circle cx="52" cy="52" r="2"/>
-  </g>
-  <circle cx="32" cy="31" r="5" fill="#00ff88"/>
-  <circle cx="32" cy="31" r="2" fill="#eafff5"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Starfield</title>
+  <defs>
+    <linearGradient id="orbit" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00d4ff"/>
+      <stop offset="1" stop-color="#00ff88"/>
+    </linearGradient>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientTransform="matrix(0 26 -26 0 32 30)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f2ffff"/>
+      <stop offset=".18" stop-color="#00ffb0"/>
+      <stop offset="1" stop-color="#00d4ff"/>
+    </radialGradient>
+    <filter id="glow" x="13" y="13" width="38" height="38" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#070d18"/>
+  <circle cx="32" cy="32" r="27" fill="none" stroke="#19303d" stroke-width="2"/>
+  <ellipse cx="32" cy="32" rx="22" ry="9" transform="rotate(-38 32 32)" fill="none" stroke="url(#orbit)" stroke-width="2"/>
+  <path d="M11 45 21 38M43 26l10-7" fill="none" stroke="#00ff88" stroke-linecap="round" stroke-width="1.5" opacity=".75"/>
+  <path d="M32 14 36.5 27.5 50 32l-13.5 4.5L32 50l-4.5-13.5L14 32l13.5-4.5L32 14Z" fill="#00d4ff" filter="url(#glow)" opacity=".8"/>
+  <path d="M32 14 36.5 27.5 50 32l-13.5 4.5L32 50l-4.5-13.5L14 32l13.5-4.5L32 14Z" fill="url(#core)"/>
+  <circle cx="13" cy="19" r="1.5" fill="#f2ffff"/>
+  <circle cx="51" cy="13" r="1" fill="#00ff88"/>
+  <circle cx="53" cy="48" r="1.5" fill="#00d4ff"/>
+  <circle cx="17" cy="51" r="1" fill="#f2ffff"/>
 </svg>
