@@ -1,6 +1,9 @@
 (async function () {
   'use strict';
 
+  var wallpaperEngineMode = new URLSearchParams(location.search).get('wallpaperEngine') === '1';
+  if (wallpaperEngineMode) document.body.classList.add('wallpaper-engine');
+
   // Keep embedded defaults in sync with LivelyProperties.json; they are used when its fetch fails.
   var livelyProperties;
   var usingFallback = false;
@@ -23,7 +26,6 @@
       starColor: { value: '#FFFFFF' },
       colorMode: { value: 0 },
       steering: { value: 0 },
-      nebulaBackdrop: { value: false },
       comets: { value: true },
       twinklingStars: { value: false },
       clockOverlay: { value: true },
@@ -32,6 +34,7 @@
       clockVerticalPosition: { min: 4, max: 92, step: 1, value: 10 },
       clockHorizontalPosition: { min: 0, max: 100, step: 1, value: 5 },
       clockPositionMode: { value: 0 },
+      clockAutoPositionInterval: { min: 1, max: 60, step: 1, value: 10 },
       clockAlignment: { value: 0 },
       autoDriftDirection: { value: 0 },
       autoDriftSpeed: { min: 0, max: 100, step: 2, value: 20 },
@@ -39,6 +42,7 @@
       autoDriftHorizontalSpeed: { min: 0, max: 100, step: 2, value: 20 },
       autoDriftVerticalSpeed: { min: 0, max: 100, step: 2, value: 20 },
       hideMouse: { value: true },
+      showInformation: { value: false },
       autoFullscreen: { value: false },
       autoFullscreenDelay: { min: 0, max: 120, step: 1, value: 30 },
       autoFullscreenCountdown: { value: false },
@@ -171,7 +175,14 @@
       values: ['fixed', 'rainbow', 'real', 'depth'],
     },
     steer: { type: 'enum', query: 'st', lively: 'steering', values: ['off', 'pointer', 'auto'] },
-    nebula: { type: 'boolean', query: 'nb', lively: 'nebulaBackdrop', control: 'o-nebula' },
+    nebula: {
+      type: 'boolean',
+      query: 'nb',
+      lively: null,
+      control: null,
+      defaultValue: false,
+      share: false,
+    },
     comets: { type: 'boolean', query: 'co', lively: 'comets', control: 'o-comets' },
     twinkle: { type: 'boolean', query: 'tw', lively: 'twinklingStars', control: 'o-twinkle' },
     clock: { type: 'boolean', query: 'cl', lively: 'clockOverlay', control: 'o-clock' },
@@ -209,8 +220,16 @@
       type: 'enum',
       query: 'cp',
       lively: 'clockPositionMode',
-      values: ['free', 'top-left', 'top-right', 'bottom-left', 'bottom-right'],
+      values: ['free', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'auto'],
       control: 'o-clock-placement',
+    },
+    clockAutoPositionInterval: {
+      type: 'number',
+      query: 'ci',
+      lively: 'clockAutoPositionInterval',
+      control: 's-clock-auto-interval',
+      valueControl: 'v-clock-auto-interval',
+      unit: ' min',
     },
     clockAlignment: {
       type: 'enum',
@@ -267,6 +286,12 @@
       lively: 'hideMouse',
       control: 'o-hide-mouse',
     },
+    showInformation: {
+      type: 'boolean',
+      query: 'oi',
+      lively: 'showInformation',
+      control: 'o-info',
+    },
     autoFullscreen: {
       type: 'boolean',
       query: 'af',
@@ -298,6 +323,10 @@
   function loadLivelySettings() {
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
+      if (!setting.lively) {
+        BASE[key] = setting.defaultValue;
+        return;
+      }
       var property = livelyProperties[setting.lively];
       if (!property) {
         throw new Error('Missing Lively property "' + setting.lively + '".');
@@ -362,11 +391,11 @@
     return SETTINGS[key].type === 'number';
   });
   var BOOLEAN_SETTINGS = Object.keys(SETTINGS).filter(function (key) {
-    return SETTINGS[key].type === 'boolean';
+    return SETTINGS[key].type === 'boolean' && SETTINGS[key].control;
   });
   var LIVELY_SETTING_KEYS = Object.create(null);
   Object.keys(SETTINGS).forEach(function (key) {
-    LIVELY_SETTING_KEYS[SETTINGS[key].lively] = key;
+    if (SETTINGS[key].lively) LIVELY_SETTING_KEYS[SETTINGS[key].lively] = key;
   });
   var LIVELY_LABELS = Object.create(null);
   LIVELY_LABELS.flightSettings = true;
@@ -384,10 +413,11 @@
     paused = false,
     isFullscreen = false,
     pseudoFs = false,
-    livelyMode = false,
+    livelyMode = wallpaperEngineMode,
     autoFullscreenLaunched = false,
     autoFullscreenCancelled = false,
-    lastActivity = Date.now();
+    lastActivity = Date.now(),
+    clockAutoPositionStarted = Date.now();
   var W = 800,
     H = 480,
     res = 1,
@@ -945,6 +975,7 @@
           Math.floor(cfg.count * qScale) +
           ' stars' +
           (qScale < 1 ? ' (auto-reduced)' : '');
+      $('sf-info-performance').textContent = statEl.textContent;
     }
   }
 
@@ -964,12 +995,14 @@
     $('clock-options-control').hidden = !cfg.clock;
     $('o-clock-placement').value = cfg.clockPlacement;
     $('clock-free-position-controls').hidden = cfg.clockPlacement !== 'free';
+    $('clock-auto-position-controls').hidden = cfg.clockPlacement !== 'auto';
+    $('clock-alignment-control').hidden = cfg.clockPlacement !== 'free';
     $('o-clock-alignment').value = cfg.clockAlignment;
-    clockEl.dataset.position = cfg.clockPlacement;
+    clockEl.dataset.position = getClockDisplayPosition();
     clockEl.style.setProperty('--clock-size', cfg.clockSize + 'rem');
     clockEl.style.setProperty('--clock-position', cfg.clockPosition + '%');
     clockEl.style.setProperty('--clock-horizontal-position', cfg.clockHorizontalPosition + '%');
-    clockEl.style.textAlign = cfg.clockAlignment;
+    clockEl.style.textAlign = getClockAlignment();
     document.querySelectorAll('.color-swatch[data-color]').forEach(function (s) {
       s.classList.toggle('active', cfg.cm === 'fixed' && s.dataset.color === cfg.color);
     });
@@ -1036,6 +1069,9 @@
       return;
     }
     cfg[k] = value;
+    if (k === 'clockPlacement' && value === 'auto') clockAutoPositionStarted = Date.now();
+    if (k === 'clockAutoPositionInterval' && cfg.clockPlacement === 'auto')
+      clockAutoPositionStarted = Date.now();
     if (k === 'autoFullscreen' && !value) exitAutoFullscreen();
     if (k === 'count') {
       qScale = 1;
@@ -1274,11 +1310,51 @@
     if (autoFullscreenLaunched && !isFullscreenShortcut(event)) exitAutoFullscreen();
     updateAutoFullscreenCountdown();
   }
+  function formatDuration(seconds) {
+    seconds = Math.max(0, Math.floor(seconds));
+    var minutes = Math.floor(seconds / 60);
+    var remainder = seconds % 60;
+    return (minutes < 10 ? '0' : '') + minutes + ':' + (remainder < 10 ? '0' : '') + remainder;
+  }
+  function updateInformation(now) {
+    var info = $('sf-info');
+    info.hidden = !cfg.showInformation;
+    if (!cfg.showInformation) return;
+
+    $('sf-info-idle').textContent = formatDuration((now - lastActivity) / 1000);
+
+    var fullscreenInfo = $('sf-info-fullscreen');
+    var showFullscreen =
+      cfg.autoFullscreen &&
+      cfg.autoFullscreenDelay > 0 &&
+      !livelyMode &&
+      !isFullscreen &&
+      !autoFullscreenLaunched;
+    fullscreenInfo.hidden = !showFullscreen;
+    if (showFullscreen) {
+      var fullscreenRemaining = Math.ceil(
+        Math.max(0, cfg.autoFullscreenDelay * 1000 - (now - lastActivity)) / 1000,
+      );
+      fullscreenInfo.textContent = 'Auto fullscreen in: ' + fullscreenRemaining + 's';
+    }
+
+    var clockInfo = $('sf-info-clock');
+    var showClock = cfg.clock && cfg.clockPlacement === 'auto';
+    clockInfo.hidden = !showClock;
+    if (showClock) {
+      var interval = cfg.clockAutoPositionInterval * 60 * 1000;
+      var elapsed = Math.max(0, now - clockAutoPositionStarted);
+      var remaining = Math.ceil((interval - (elapsed % interval)) / 1000);
+      clockInfo.textContent = 'Clock moves in: ' + formatDuration(remaining);
+    }
+  }
   function updateAutoFullscreenCountdown() {
     var countdown = $('auto-fullscreen-countdown');
+    updateInformation(Date.now());
     var show =
       cfg.autoFullscreen &&
       cfg.autoFullscreenCountdown &&
+      !cfg.showInformation &&
       cfg.autoFullscreenDelay > 0 &&
       !livelyMode &&
       !isFullscreen &&
@@ -1288,7 +1364,6 @@
       countdown.hidden = true;
       return;
     }
-
     var remaining = Math.ceil(
       Math.max(0, cfg.autoFullscreenDelay * 1000 - (Date.now() - lastActivity)) / 1000,
     );
@@ -1370,7 +1445,20 @@
   });
 
   /* ── clock ───────────────────────────────────────────────── */
+  var AUTO_CLOCK_POSITIONS = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+  function getClockDisplayPosition() {
+    if (cfg.clockPlacement !== 'auto') return cfg.clockPlacement;
+    var interval = cfg.clockAutoPositionInterval * 60 * 1000;
+    var positionIndex = Math.floor((Date.now() - clockAutoPositionStarted) / interval);
+    return AUTO_CLOCK_POSITIONS[positionIndex % AUTO_CLOCK_POSITIONS.length];
+  }
+  function getClockAlignment() {
+    if (cfg.clockPlacement === 'free') return cfg.clockAlignment;
+    return getClockDisplayPosition().indexOf('right') >= 0 ? 'right' : 'left';
+  }
   function updateClock() {
+    clockEl.dataset.position = getClockDisplayPosition();
+    clockEl.style.textAlign = getClockAlignment();
     if (!cfg.clock) return;
     var d = new Date();
     // Seconds are optional; the same locale formatting is used in the page and fullscreen.
@@ -1432,6 +1520,7 @@
     var q = new URLSearchParams();
     Object.keys(SETTINGS).forEach(function (key) {
       var setting = SETTINGS[key];
+      if (setting.share === false) return;
       var value = cfg[key];
       if (setting.type === 'boolean') value = value ? 1 : 0;
       else if (setting.type === 'color') value = value.replace('#', '');
@@ -1542,7 +1631,6 @@
       bump('roll', -1);
     } else if (lk === 'r') resetDefaults();
     else if (lk === 'c') setKey('clock', !cfg.clock);
-    else if (lk === 'n') setKey('nebula', !cfg.nebula);
     else if (lk === 'm')
       setKey('steer', cfg.steer === 'off' ? 'pointer' : cfg.steer === 'pointer' ? 'auto' : 'off');
     else if (lk === 'p') savePNG();
@@ -1596,10 +1684,12 @@
   (function boot() {
     var fromUrl = loadQuery(location.search),
       saved = null;
-    try {
-      saved = JSON.parse(localStorage.getItem('sf2') || 'null');
-    } catch (e) {
-      console.warn('Could not read saved starfield settings.', e);
+    if (!wallpaperEngineMode) {
+      try {
+        saved = JSON.parse(localStorage.getItem('sf2') || 'null');
+      } catch (e) {
+        console.warn('Could not read saved starfield settings.', e);
+      }
     }
     if (!fromUrl) {
       if (saved && saved.cfg && typeof saved.cfg === 'object') {

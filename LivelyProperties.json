@@ -143,11 +143,6 @@
     "type": "dropdown",
     "value": 0
   },
-  "nebulaBackdrop": {
-    "text": "Nebula backdrop",
-    "type": "checkbox",
-    "value": false
-  },
   "comets": {
     "text": "Comets",
     "type": "checkbox",
@@ -173,11 +168,20 @@
       "Top left",
       "Top right",
       "Bottom left",
-      "Bottom right"
+      "Bottom right",
+      "Automatic positioning (prevent burn-in)"
     ],
     "text": "Clock position",
     "type": "dropdown",
     "value": 0
+  },
+  "clockAutoPositionInterval": {
+    "max": 60,
+    "min": 1,
+    "step": 1,
+    "text": "Automatic clock position change interval (minutes)",
+    "type": "slider",
+    "value": 10
   },
   "showClockSeconds": {
     "text": "Show clock seconds",
@@ -220,6 +224,11 @@
   "optionsSettings": {
     "type": "label",
     "value": "Options"
+  },
+  "showInformation": {
+    "text": "Show information",
+    "type": "checkbox",
+    "value": false
   },
   "fullscreenSettings": {
     "type": "label",

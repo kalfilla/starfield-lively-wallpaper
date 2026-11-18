@@ -162,7 +162,6 @@
           </details>
           <details class="sub-options" open>
             <summary class="section-title">Effects</summary>
-            <label class="chk"><input type="checkbox" id="o-nebula"> Nebula backdrop</label>
             <label class="chk"><input type="checkbox" id="o-comets"> Comets</label>
             <label class="chk"><input type="checkbox" id="o-twinkle"> Twinkling stars</label>
           </details>
@@ -182,7 +181,13 @@
               <option value="top-right">Top right</option>
               <option value="bottom-left">Bottom left</option>
               <option value="bottom-right">Bottom right</option>
+              <option value="auto">Automatic positioning (prevent burn-in)</option>
             </select>
+            <div class="ctrl-row" id="clock-auto-position-controls" hidden>
+              <label class="ctrl-label" for="s-clock-auto-interval">Interval time</label>
+              <input type="range" id="s-clock-auto-interval" aria-label="Automatic clock position change interval">
+              <span class="ctrl-val" id="v-clock-auto-interval"></span>
+            </div>
             <div id="clock-free-position-controls">
               <div class="ctrl-row">
                 <label class="ctrl-label" for="s-clock-position">Vertical position</label>
@@ -201,13 +206,15 @@
               <input type="range" id="s-clock-size" aria-label="Clock size">
               <span class="ctrl-val" id="v-clock-size"></span>
             </div>
-            <label class="ctrl-label" for="o-clock-alignment" style="display:block;margin:.5rem 0 .3rem">
-              Time and date alignment
-            </label>
-            <select class="sel" id="o-clock-alignment" aria-label="Time and date alignment">
-              <option value="left">Align left</option>
-              <option value="right">Align right</option>
-            </select>
+            <div id="clock-alignment-control">
+              <label class="ctrl-label" for="o-clock-alignment" style="display:block;margin:.5rem 0 .3rem">
+                Time and date alignment
+              </label>
+              <select class="sel" id="o-clock-alignment" aria-label="Time and date alignment">
+                <option value="left">Align left</option>
+                <option value="right">Align right</option>
+              </select>
+            </div>
           </details>
         </details>
 
@@ -234,6 +241,7 @@
             <label class="chk"><input type="checkbox" id="o-auto"> Auto quality (fewer stars if it runs slowly)</label>
             <div class="stat" id="sf-stats" aria-live="off">60 fps · 700 stars</div>
           </details>
+          <label class="chk"><input type="checkbox" id="o-info"> Show information</label>
         </details>
 
         <details class="section" data-section="about">
@@ -259,7 +267,7 @@
               <span class="about-keys"><kbd>R</kbd></span><span>Reset defaults.</span>
             </div>
             <div class="about-row">
-              <span class="about-keys"><kbd>C</kbd> <kbd>N</kbd></span><span>Toggle clock / nebula.</span>
+              <span class="about-keys"><kbd>C</kbd></span><span>Toggle clock.</span>
             </div>
             <div class="about-row">
               <span class="about-keys"><kbd>M</kbd></span><span>Cycle straight, pointer, and auto-drift steering.</span>
@@ -288,8 +296,8 @@
               </div>
               <div class="about-url-row">
                 <dt>Appearance</dt>
-                <dd><code>c</code> color · <code>cm</code> color mode · <code>nb</code> nebula · <code>co</code>
-                  comets · <code>tw</code> twinkle
+                <dd><code>c</code> color · <code>cm</code> color mode · <code>co</code> comets · <code>tw</code>
+                  twinkle
                 </dd>
               </div>
               <div class="about-url-row">
@@ -302,13 +310,14 @@
               <div class="about-url-row">
                 <dt>Clock</dt>
                 <dd><code>cl</code> clock · <code>cs</code> seconds · <code>cz</code> size · <code>cv</code>/<code>ch</code>
-                  vertical/horizontal position · <code>cp</code> placement · <code>ca</code> alignment
+                  vertical/horizontal position · <code>cp</code> placement · <code>ci</code> automatic position interval
+                  (minutes) · <code>ca</code> alignment
                 </dd>
               </div>
               <div class="about-url-row">
                 <dt>Fullscreen</dt>
                 <dd><code>hm</code> hide mouse · <code>fs</code> start linked page fullscreen · <code>af</code> auto
-                  fullscreen · <code>afd</code> idle delay · <code>afc</code> countdown
+                  fullscreen · <code>afd</code> idle delay · <code>afc</code> countdown · <code>oi</code> information
                 </dd>
               </div>
               <div class="about-url-row">
@@ -330,6 +339,12 @@
           width="1098" height="480"></canvas>
         <div id="auto-fullscreen-countdown" hidden aria-live="off">
           auto fullscreen in <span id="auto-fullscreen-seconds">30</span>s
+        </div>
+        <div id="sf-info" hidden aria-live="off">
+          <span>Idle: <span id="sf-info-idle">00:00</span></span>
+          <span id="sf-info-fullscreen" hidden></span>
+          <span id="sf-info-clock" hidden></span>
+          <span id="sf-info-performance">60 fps · 700 stars</span>
         </div>
         <div id="sf-flash" aria-hidden="true" style="opacity: 0;"></div>
         <div id="sf-hud" aria-hidden="true"></div>

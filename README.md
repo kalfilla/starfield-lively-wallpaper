@@ -24,15 +24,17 @@ Default** option in the customization panel to reload the supplied defaults.
 ## Lively controls
 
 The Lively controls cover star count, speed, warp, star size, glow, trail, roll,
-star color and color mode, steering, auto-drift direction and speed, nebula,
-comets, twinkle, clock options, fullscreen behavior, and auto quality. Lively
-calls `livelyPropertyListener(name, value)` when a control changes; the
-wallpaper applies the setting immediately.
+star color and color mode, steering, auto-drift direction and speed, comets,
+twinkle, clock options, fullscreen behavior, information display, and auto
+quality. Lively calls `livelyPropertyListener(name, value)` when a control
+changes; the wallpaper applies the setting immediately.
 
 When the clock overlay is enabled, its options include seconds, size, alignment,
 and a position mode. **Free position** uses the horizontal and vertical sliders;
-the four fixed modes place the clock in a corner. The time and date can be
-aligned to the left or right edge of each other.
+the four fixed modes place the clock in a corner. **Automatic positioning**
+cycles the clock through the corners to reduce burn-in, using a configurable
+interval from 1 to 60 minutes. Corner positions align the time and date toward
+the nearest side; manual alignment is available only in **Free position**.
 Selecting **Auto drift** reveals direction, movement range, and overall,
 horizontal, and vertical speed controls. These settings are also available in
 Lively and included in copied settings links. The three speed sliders display
@@ -52,7 +54,9 @@ disables the idle trigger. Browsers may block native fullscreen without a user
 gesture; if that happens, the page uses its viewport fullscreen and shows a
 notice. An optional `auto fullscreen in Ns` countdown appears inside the canvas;
 shared links use `af=1` to enable auto fullscreen, `afd` for the delay in
-seconds, and `afc=1` to show the countdown.
+seconds, and `afc=1` to show the countdown. **Show information** displays the
+idle duration, remaining auto-fullscreen or automatic-clock time, and FPS/star
+count information.
 The interface uses the locally bundled Source Code Pro font, and the standalone
 settings page has a compact Allerta Stencil `STARFIELD` banner with green/cyan
 shadow layers, randomized letter glitches, and jitter; the underscore cursor
@@ -78,7 +82,18 @@ Lively itself manages the desktop-sized surface. The **Start standalone page in
 fullscreen** property is for the browser page's shareable `fs` setting; it
 doesn't request a second fullscreen window from Lively.
 
+## Wallpaper Engine
+
+Run `.\export-wallpaper-engine.cmd` to create a clean `WallpaperEngineExport`
+folder containing the wallpaper entry point, its settings file, and required
+local assets. In the Wallpaper Engine editor, drag
+`WallpaperEngineExport\wallpaper-engine.html` onto **Create Wallpaper**. This
+entry point opens the full-screen wallpaper without the settings sidebar. The
+editor creates the Wallpaper Engine `project.json` when it imports the HTML
+project; no pre-created project file is required.
+
 ## References
 
 - [Lively Web Wallpaper Interaction Guide](https://github.com/rocksdanister/lively/wiki/Web-Guide-IV-:-Interaction)
 - [Lively Wallpaper](https://github.com/lively-community/lively)
+- [Wallpaper Engine Web Wallpaper Guide](https://docs.wallpaperengine.io/en/web/first/gettingstarted.html)
